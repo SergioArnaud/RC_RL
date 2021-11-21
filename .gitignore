@@ -1,3 +1,7 @@
+*.DS_STORE
+object_interaction_histories/**
+pickleFiles/**
+
 *~
 *.pyc
 *.simg
