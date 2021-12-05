@@ -16,7 +16,7 @@ import cv2
 import os
 from pygame.locals import K_RIGHT, K_LEFT, K_UP, K_DOWN, K_SPACE
 
-class VGDLEnvAndres(object):
+class DopamineVGDLEnv(object):
     def __init__(self, game_name):
 
         ###CONFIGS
@@ -134,7 +134,7 @@ class VGDLEnvAndres(object):
                               "ab") as file:
                         writer = csv.writer(file)
                         writer.writerow(episode_results)
-                    print('{{}'.format(1))
+                    print('{}'.format(1))
                     return self.state, self.reward, self.game_over, 0
             self.episode_reward = 0
 
@@ -209,3 +209,6 @@ class VGDLEnvAndres(object):
             return 0
         else:
             raise Exception('level switch not specified.')
+
+    def close(self):
+		pass
