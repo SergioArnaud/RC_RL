@@ -1,6 +1,6 @@
 
 from vgdl import colors
-import utils
+import utils_vgdl
 import pygame
 from pygame.locals import K_RIGHT, K_LEFT, K_UP, K_DOWN, K_SPACE
 from vgdl.rlenvironmentnonstatic import createRLInputGameFromStrings
@@ -25,7 +25,7 @@ class VGDLEnv():
 		self.game_name = game_name
 		self.game_folder = game_folder
                 #pdb.set_trace()  
-		self.env_list = utils.load_game(game_name, game_folder)
+		self.env_list = utils_vgdl.load_game(game_name, game_folder)
 
 		self.lvl = 0
 
@@ -68,7 +68,7 @@ class VGDLEnv():
 
 	def reset(self):
 
-		self.env_list = utils.load_game(self.game_name, self.game_folder)
+		self.env_list = utils_vgdl.load_game(self.game_name, self.game_folder)
 		self.set_level(self.lvl)
 		self.current_env.softReset()
 
@@ -91,6 +91,9 @@ class VGDLEnv():
 
 		if gif: im = resize(im, (64, 64, 3))
 		return im
+	
+	def close(self):
+		pass
 
 
 

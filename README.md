@@ -1,6 +1,12 @@
 Interfacing with VGDL
 =====================
 
+SETUP
+```
+Conda environment
+pip install -r requirements.txt 
+```
+
 Instructions to interface with VGDL and to run DeepRL Models.
 
 Gym-like API to run your own models
