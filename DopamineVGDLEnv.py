@@ -8,10 +8,12 @@ from VGDLEnv import VGDLEnv
 import csv
 import cloudpickle
 import cv2
+import time
+import os
 
 
 class DopamineVGDLEnv(object):
-    def __init__(self, game_name):
+    def __init__(self, game_name, parameter_set=""):
 
         # CONFIGS
         self.game_name = game_name
@@ -22,16 +24,26 @@ class DopamineVGDLEnv(object):
         self.timeout = 2000
         games_folder = "../all_games"
 
+        date = time.strftime("%Y.%m.%d")
+        experiment_id = "{}_{}_{}".format(
+            time.strftime("%Y.%m.%d_%H.%M.%S"), game_name, parameter_set
+        )
+
+        self.experiment_outpath = "../experiments/{}/{}/{}".format(
+            game_name, date, experiment_id
+        )
+        if not os.path.exists(self.experiment_outpath):
+            os.makedirs(self.experiment_outpath)
+
         # FOR RECORDING
         self.record_flag = 1  # record_flag
         # pdb.set_trace()
-        self.reward_histories_folder = "../reward_histories"
-        self.object_interaction_histories_folder = "../object_interaction_histories"
-        self.avatar_file_path = "../pickleFiles/{}_avatar.p".format(
-            self.game_name_short
+
+        self.avatar_file_path = "{}/{}_avatar.p".format(
+            self.experiment_outpath, self.game_name_short
         )
-        self.objects_file_path = "../pickleFiles/{}_objects.p".format(
-            self.game_name_short
+        self.objects_file_path = "{}/{}_objects.p".format(
+            self.experiment_outpath, self.game_name_short
         )
 
         self.Env = VGDLEnv(self.game_name_short, games_folder)
@@ -50,11 +62,8 @@ class DopamineVGDLEnv(object):
 
         if self.record_flag:
             with open(
-                "{}/{}_reward_history_{}_trial{}.csv".format(
-                    self.reward_histories_folder,
-                    self.game_name_short,
-                    self.level_switch,
-                    self.trial_num,
+                "{}/{}_reward_history_{}.csv".format(
+                    self.experiment_outpath, self.game_name_short, self.level_switch
                 ),
                 "ab",
             ) as file:
@@ -64,11 +73,8 @@ class DopamineVGDLEnv(object):
                 )
 
             with open(
-                "{}/{}_object_interaction_history_{}_trial{}.csv".format(
-                    self.object_interaction_histories_folder,
-                    self.game_name_short,
-                    self.level_switch,
-                    self.trial_num,
+                "{}/{}_object_interaction_history_{}.csv".format(
+                    self.experiment_outpath, self.game_name_short, self.level_switch
                 ),
                 "wb",
             ) as file:
@@ -113,11 +119,13 @@ class DopamineVGDLEnv(object):
             )
 
             objects = self.Env.get_objects()
-            self.objects_position_data["episodes"][-1].append({
-                "time": self.Env.current_env._game.time,
-                "level": self.Env.lvl,
-                "objects": objects,
-            })
+            self.objects_position_data["episodes"][-1].append(
+                {
+                    "time": self.Env.current_env._game.time,
+                    "level": self.Env.lvl,
+                    "objects": objects,
+                }
+            )
 
         else:
             print("AVATAR_ERROR_IGNORE")
@@ -151,11 +159,8 @@ class DopamineVGDLEnv(object):
             # PEDRO: 3. At the end of each episode, write events to csv
             if self.record_flag:
                 with open(
-                    "{}/{}_object_interaction_history_{}_trial{}.csv".format(
-                        self.object_interaction_histories_folder,
-                        self.game_name_short,
-                        self.level_switch,
-                        self.trial_num,
+                    "{}/{}_object_interaction_history_{}.csv".format(
+                        self.experiment_outpath, self.game_name_short, self.level_switch
                     ),
                     "ab",
                 ) as file:
@@ -193,11 +198,10 @@ class DopamineVGDLEnv(object):
             if self.level_step():
                 if self.record_flag:
                     with open(
-                        "{}/{}_reward_history_{}_trial{}.csv".format(
-                            self.reward_histories_folder,
+                        "{}/{}_reward_history_{}.csv".format(
+                            self.experiment_outpath,
                             self.game_name_short,
                             self.level_switch,
-                            self.trial_num,
                         ),
                         "ab",
                     ) as file:
@@ -216,11 +220,8 @@ class DopamineVGDLEnv(object):
 
             if self.record_flag:
                 with open(
-                    "{}/{}_reward_history_{}_trial{}.csv".format(
-                        self.reward_histories_folder,
-                        self.game_name_short,
-                        self.level_switch,
-                        self.trial_num,
+                    "{}/{}_reward_history_{}.csv".format(
+                        self.experiment_outpath, self.game_name_short, self.level_switch
                     ),
                     "ab",
                 ) as file:

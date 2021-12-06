@@ -7,3 +7,4 @@ pickleFiles/**
 *.simg
 venv/
 __pycache__/
+experiments/**
