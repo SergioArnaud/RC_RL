@@ -27,8 +27,12 @@ class DopamineVGDLEnv(object):
         # pdb.set_trace()
         self.reward_histories_folder = "../reward_histories"
         self.object_interaction_histories_folder = "../object_interaction_histories"
-        self.avatar_file_path = "../pickleFiles/{}.p".format(self.game_name_short)
-        self.objects_file_path = "../pickleFiles/{}.p".format(self.game_name_short)
+        self.avatar_file_path = "../pickleFiles/{}_avatar.p".format(
+            self.game_name_short
+        )
+        self.objects_file_path = "../pickleFiles/{}_objects.p".format(
+            self.game_name_short
+        )
 
         self.Env = VGDLEnv(self.game_name_short, games_folder)
         self.Env.set_level(0)
@@ -109,15 +113,11 @@ class DopamineVGDLEnv(object):
             )
 
             objects = self.Env.get_objects()
-            self.objects_position_data = {
+            self.objects_position_data["episodes"][-1].append({
                 "time": self.Env.current_env._game.time,
                 "level": self.Env.lvl,
                 "objects": objects,
-                "game_info": (
-                    self.Env.current_env._game.width,
-                    self.Env.current_env._game.height,
-                ),
-            }
+            })
 
         else:
             print("AVATAR_ERROR_IGNORE")
@@ -244,6 +244,23 @@ class DopamineVGDLEnv(object):
                         self.Env.current_env._game.time,
                         self.Env.lvl,
                     )
+                ]
+            ],
+        }
+
+        objects = self.Env.get_objects()
+        self.objects_position_data = {
+            "game_info": (
+                self.Env.current_env._game.width,
+                self.Env.current_env._game.height,
+            ),
+            "episodes": [
+                [
+                    {
+                        "time": self.Env.current_env._game.time,
+                        "level": self.Env.lvl,
+                        "objects": objects,
+                    }
                 ]
             ],
         }
