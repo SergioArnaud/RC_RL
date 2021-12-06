@@ -1,10 +1,10 @@
 import numpy as np
 from numpy import zeros
 import pygame    
-from ontology import BASEDIRS
-from core import VGDLSprite, colorDict, sys
-from stateobsnonstatic import StateObsHandlerNonStatic 
-from rlenvironmentnonstatic import *
+from .ontology import BASEDIRS
+from .core import VGDLSprite, colorDict, sys
+from .stateobsnonstatic import StateObsHandlerNonStatic 
+from .rlenvironmentnonstatic import *
 import argparse
 import random
 from IPython import embed
@@ -14,14 +14,14 @@ from collections import defaultdict, deque
 import time
 import copy
 from threading import Lock
-from Queue import Queue
-from util import *
+from queue import Queue
+from .util import *
 import multiprocessing
-from ontology import Immovable, Passive, Resource, ResourcePack, RandomNPC, Chaser, AStarChaser, OrientedSprite, Missile
-from ontology import initializeDistribution, updateDistribution, updateOptions, sampleFromDistribution, spriteInduction, selectObjectGoal
-from theory_template import TimeStep, Precondition, InteractionRule, TerminationRule, TimeoutRule, SpriteCounterRule, MultiSpriteCounterRule, \
+from .ontology import Immovable, Passive, Resource, ResourcePack, RandomNPC, Chaser, AStarChaser, OrientedSprite, Missile
+from .ontology import initializeDistribution, updateDistribution, updateOptions, sampleFromDistribution, spriteInduction, selectObjectGoal
+from .theory_template import TimeStep, Precondition, InteractionRule, TerminationRule, TimeoutRule, SpriteCounterRule, MultiSpriteCounterRule, \
 generateSymbolDict, ruleCluster, Theory, Game, writeTheoryToTxt, generateTheoryFromGame
-from rlenvironmentnonstatic import createRLInputGame
+from .rlenvironmentnonstatic import createRLInputGame
 
 #A hack to display things to the terminal conveniently.
 np.core.arrayprint._line_width=250
@@ -56,15 +56,15 @@ class Planner:
 			self.immovables = self.rle.immovables
 			self.killerObjects = self.rle.killerObjects
 			self.teleports = self.rle.teleports
-			print "immovables", self.rle.immovables
+			print("immovables", self.rle.immovables)
 		except:
 			self.immovables = ['wall', 'poison']
 			self.killerObjects = ['chaser']
 			self.teleports = ['exit1', 'entry1']
-			print "Using defaults as immovables", self.immovables
+			print("Using defaults as immovables", self.immovables)
 
 		for i in self.immovables:
-			if i in self.rle._obstypes.keys():
+			if i in list(self.rle._obstypes.keys()):
 				immovable_codes.append(2**(1+sorted(self.rle._obstypes.keys())[::-1].index(i)))
 
 		# embed()
@@ -165,11 +165,11 @@ class Planner:
 		while len(rewardQueue)>0:
 			loc = rewardQueue.popleft()
 			if loc not in processed:
-				valid_neighbors = [n for n in self.neighborDict[loc] if n in self.rewardDict.keys()]
+				valid_neighbors = [n for n in self.neighborDict[loc] if n in list(self.rewardDict.keys())]
 				try:
 					self.rewardDict[loc] = max([self.rewardDict[n] for n in valid_neighbors]) * self.pseudoRewardDecay
 				except:
-					print "problem with rewardDict"
+					print("problem with rewardDict")
 					embed()
 				processed.append(loc)
 				for n in self.neighborDict[loc]:
@@ -204,9 +204,9 @@ class Planner:
 			nextLoc = currentLoc[0]+a[1], currentLoc[1]+a[0] #again, locations are (y,x) and actions are (x,y)
 		else:
 			return 0.
-		if nextLoc in self.rewardDict.keys():
+		if nextLoc in list(self.rewardDict.keys()):
 			return self.rewardDict[nextLoc]
-		elif currentLoc in self.rewardDict.keys():
+		elif currentLoc in list(self.rewardDict.keys()):
 			return self.rewardDict[currentLoc]
 		else:
 			return 0.
@@ -237,7 +237,7 @@ class Planner:
 	def findObjectsInState(self, s, objName):
 		##TODO: Finish last part of this function -- sometimes it can't access objloc[0][0], objloc[1][0]
 		
-		if objName in self.rle._game.sprite_groups.keys():
+		if objName in list(self.rle._game.sprite_groups.keys()):
 			return [self.rle._rect2pos(o.rect) for o in self.rle._game.sprite_groups[objName] if o not in self.rle._game.kill_list]
 		else:
 			return None

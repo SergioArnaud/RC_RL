@@ -9,9 +9,9 @@ This interface is a generic one for interfacing with RL agents.
 
 from numpy import zeros
 import pygame    
-from ontology import BASEDIRS
-from core import VGDLSprite
-from stateobs import StateObsHandler 
+from .ontology import BASEDIRS
+from .core import VGDLSprite
+from .stateobs import StateObsHandler 
 import argparse
 
 OBSERVATION_LOCAL = 'local'
@@ -245,19 +245,19 @@ def testSpecs():
     game = _createVGDLGame( *defMaze() )
     rle = RLEnvironment( *defMaze() )
     if rle.actionSpec() != {'scheme': 'Integer', 'N': 4}:
-        print "FAILED actionSpec"
-        print rle.actionSpec()
+        print("FAILED actionSpec")
+        print(rle.actionSpec())
     if rle.observationSpec() != {'scheme': 'Doubles', 'size': [10, 1]}:
-        print "FAILED observationSpec"
-        print rle.observationSpec()
+        print("FAILED observationSpec")
+        print(rle.observationSpec())
 
 # Verify that observation received matches target observation
 def _verify( obs, targetObs ):
     if obs["pcontinue"] != targetObs["pcontinue"]:
-        print "FAILED pcontinue"
+        print("FAILED pcontinue")
         return False
     if obs["reward"] != targetObs["reward"]:
-        print "FAILED reward"
+        print("FAILED reward")
         return False
     match = True
     i=0 
@@ -267,11 +267,11 @@ def _verify( obs, targetObs ):
         i = i+1
 
     if match==False:
-        print ""
-        print "FAILED observation"
-        print obs["observation"]
-        print targetObs["observation"]
-        print match
+        print("")
+        print("FAILED observation")
+        print(obs["observation"])
+        print(targetObs["observation"])
+        print(match)
         return False
     return True
 

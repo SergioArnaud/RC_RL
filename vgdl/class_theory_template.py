@@ -1,7 +1,7 @@
 import pygame
 import sys
 sys.path.insert(0, '../')
-from tools import Node, indentTreeParser
+from .tools import Node, indentTreeParser
 from collections import defaultdict
 import os
 import uuid
@@ -9,9 +9,9 @@ import subprocess
 import glob
 # import ipdb
 from IPython import embed
-from core import *
-from tools import roundedPoints
-from ontology import colorDict
+from .core import *
+from .tools import roundedPoints
+from .ontology import colorDict
 # from vgdl.core import *
 # from vgdl.tools import roundedPoints
 # from vgdl.ontology import colorDict
@@ -29,7 +29,7 @@ class Sprite(object):
 
     # TODO: Should enforce proper syntax for properties
     def display(self):
-        print (self.vgdlType, self.color, self.className, self.args)
+        print((self.vgdlType, self.color, self.className, self.args))
 
     def __eq__(self, other):
         return all([
@@ -51,7 +51,7 @@ class SpriteParser(object):
         """ Whatever is visible in the global namespace (after importing the ontologies)
         can be used in the VGDL, and is evaluated.
         """
-        from ontology import * #@UnusedWildImport
+        from .ontology import * #@UnusedWildImport
         return eval(estr)
 
     def _parseArgs(self, s,  sclass=None, args=None):
@@ -81,7 +81,7 @@ class SpriteParser(object):
             if c.content == "SpriteSet":
                 self.parseSprites(c.children)
         #Return list of sprite types.
-        return self.sprite_types.values()
+        return list(self.sprite_types.values())
 
 
     def parseSprites(self, snodes, parentclass=None, parentargs={}, parenttypes=[]):

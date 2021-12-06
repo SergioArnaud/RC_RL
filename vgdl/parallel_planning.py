@@ -1,5 +1,5 @@
 from pathos.multiprocessing import ProcessingPool
-from main_agent import Agent
+from .main_agent import Agent
 import time
 import dill
 import os
@@ -50,7 +50,7 @@ def play_trainset(hyperparameters):
 
         def gen_color():
         	from vgdl.colors import colorDict
-        	color_list = colorDict.values()
+        	color_list = list(colorDict.values())
         	color_list = [c for c in color_list if c not in ['UUWSWF']]
         	for color in color_list:
         		yield color

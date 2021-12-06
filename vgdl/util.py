@@ -3,7 +3,7 @@ import itertools
 import os
 import random
 import csv
-import cPickle
+import pickle
 
 ALNUM = '0123456789bcdefhijklmnpqrstuvwxyzQWERTYUIOPSDFHJKLZXCVBNM,./;[]<>?:`-=~!@#$%^&*()_+'
 CHARS = 'bcdefhijklmnpqrstuvwxyzQWERTYUIOPSDFHJKLZXCVBNM'
@@ -35,7 +35,7 @@ def factorize(rle, n):
 	if n%2==1:
 		decomposition.append(0)
 		n = n-1
-	i = len(rle._obstypes.keys())
+	i = len(list(rle._obstypes.keys()))
 	while i>0:
 		if n>=2**i:
 			decomposition.append(i)
@@ -52,22 +52,22 @@ def objectsToSymbol(rle, objects, symbolDict):
 	objects = [rle._game.sprite_groups[o][0].colorName for o in objects]
 	try:
 		if len(objects)==1:
-			if objects[0] not in symbolDict.keys():
-				idx = len(symbolDict.keys())
+			if objects[0] not in list(symbolDict.keys()):
+				idx = len(list(symbolDict.keys()))
 				symbolDict[objects[0]] = ALNUM[idx]
 			return symbolDict[objects[0]]
 		else:
 			for item in itertools.permutations(objects):
-				if tuple(item) in symbolDict.keys():
+				if tuple(item) in list(symbolDict.keys()):
 					return symbolDict[tuple(item)]
 
-		if not any([tuple(k) in symbolDict.keys() for k in list(itertools.permutations(objects))]):
-			idx = len(symbolDict.keys())
+		if not any([tuple(k) in list(symbolDict.keys()) for k in list(itertools.permutations(objects))]):
+			idx = len(list(symbolDict.keys()))
 			symbolDict[tuple(objects)] = ALNUM[idx]
 			return ALNUM[idx]
 	except:
 		# import ipdb; ipdb.set_trace()
-		print "objectsToSymbol problem."
+		print("objectsToSymbol problem.")
 		embed()
 
 def getObjectColor(objectID, all_objects, game, colorDict):
@@ -75,14 +75,14 @@ def getObjectColor(objectID, all_objects, game, colorDict):
 		return None
 	elif objectID == 'EOS':
 		return 'ENDOFSCREEN'
-	elif objectID in all_objects.keys():
+	elif objectID in list(all_objects.keys()):
 		return all_objects[objectID]['type']['color']
-	elif objectID in game.getObjects().keys():
+	elif objectID in list(game.getObjects().keys()):
 		return game.getObjects()[objectID]['type']['color']
-	elif objectID in [colorDict[k] for k in colorDict.keys()]:
+	elif objectID in [colorDict[k] for k in list(colorDict.keys())]:
 		# If we were passed a color to begin with (i.e., in the case of EOS)
 		return objectID
-	elif objectID in game.sprite_groups.keys():
+	elif objectID in list(game.sprite_groups.keys()):
 		return colorDict[str(game.sprite_groups[objectID][0].color)]
 	elif objectID in [obj.ID for obj in game.kill_list]:
 		objectColor = [obj.color for obj in ame.kill_list
@@ -91,16 +91,16 @@ def getObjectColor(objectID, all_objects, game, colorDict):
 	else:
 		# for some reason we haven't been passed an ID but rather a sprite object
 		objectName = objectID.name
-		color = [all_objects[k]['type']['color'] for k in all_objects.keys() if all_objects[k]['sprite'].name==objectName][0]
+		color = [all_objects[k]['type']['color'] for k in list(all_objects.keys()) if all_objects[k]['sprite'].name==objectName][0]
 		return color
 
 def extendColorDict(num):
 	for i in range(num):
 		colorName = make_random_name(CAPCHARS)
-		color = (random.choice(range(256)), random.choice(range(256)), random.choice(range(256)))
-		print colorName + '=' + str(color)
+		color = (random.choice(list(range(256))), random.choice(list(range(256))), random.choice(list(range(256))))
+		print(colorName + '=' + str(color))
 		colorDict[str(color)] = colorName
-	print colorDict
+	print(colorDict)
 
 def make_random_name(chars):
 	import random
@@ -133,7 +133,7 @@ def write_to_csv(foldername, filename, game):
 		writer.writerow((game['modelType'], game['condition'], game['gameName'], levels_won, steps, planner_steps, score))
 	f.close()
 def ccopy(obj):
-	return cPickle.loads(cPickle.dumps(obj))
+	return pickle.loads(pickle.dumps(obj))
 
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):

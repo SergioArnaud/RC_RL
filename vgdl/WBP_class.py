@@ -1,5 +1,5 @@
 from IPython import embed
-from planner import *
+from .planner import *
 import itertools
 
 from pygame.locals import K_SPACE, K_UP, K_DOWN, K_LEFT, K_RIGHT
@@ -11,12 +11,12 @@ actionDict = {K_SPACE: 'space', K_UP: 'up', K_DOWN: 'down', K_LEFT: 'left', K_RI
 class WBP(Planner):
 	def __init__(self, rle, gameString, levelString, gameFilename):
 		Planner.__init__(self, rle, gameString, levelString, gameFilename, display=1)
-		self.T = len(rle._obstypes.keys())+1 #number of object types. Adding avatar, which is not in obstypes.
+		self.T = len(list(rle._obstypes.keys()))+1 #number of object types. Adding avatar, which is not in obstypes.
 		self.vecDim = [rle.outdim[0]*rle.outdim[1], 2, self.T]
 		self.trueAtoms = set() ## set of atoms that have been true at some point thus far in the planner.
-		self.objectTypes = rle._game.sprite_groups.keys()
+		self.objectTypes = list(rle._game.sprite_groups.keys())
 		self.objectTypes.sort()
-		self.phiSize = sum([len(rle._game.sprite_groups[k]) for k in rle._game.sprite_groups.keys() if k not in ['wall', 'avatar']])
+		self.phiSize = sum([len(rle._game.sprite_groups[k]) for k in list(rle._game.sprite_groups.keys()) if k not in ['wall', 'avatar']])
 		self.objIDs = {}
 		self.maxNumObjects = 6
 		self.trackTokens = False
@@ -25,7 +25,7 @@ class WBP(Planner):
 		self.addWaitAction = True
 		self.padding = 5  ##5 is arbitrary; just to make sure we don't get overlap when we add positions
 		i=1
-		for k in rle._game.all_objects.keys():
+		for k in list(rle._game.all_objects.keys()):
 			self.objIDs[k] = i * (rle.outdim[0]*rle.outdim[1]+self.padding)
 			i+=1
 		self.addSpaceBarToActions()
@@ -34,7 +34,7 @@ class WBP(Planner):
 		## Note: if an object that isn't instantiated in the beginning is of a class that 
 		## spacebar applies to, we won't pick up on it here.
 		shootingClasses = ['MarioAvatar', 'ClimbingAvatar', 'ShootAvatar', 'Switch', 'FlakAvatar']
-		classes = [str(o[0].__class__) for o in self.rle._game.sprite_groups.values() if len(o)>0]
+		classes = [str(o[0].__class__) for o in list(self.rle._game.sprite_groups.values()) if len(o)>0]
 		spacebarAvailable = False
 		for sc in shootingClasses:
 			if any([sc in c for c in classes]):
@@ -50,7 +50,7 @@ class WBP(Planner):
 
 	def calculateAtoms(self, rle):
 		lst = []
-		for k in rle._game.sprite_groups.keys():
+		for k in list(rle._game.sprite_groups.keys()):
 			for o in rle._game.sprite_groups[k]:
 				if o not in rle._game.kill_list:
 					## turn location into vector posd2[ition (rows appended one after the other.)
@@ -72,12 +72,12 @@ class WBP(Planner):
 		lst.append(ind)
 		if not self.vecSize:
 			self.vecSize = len(lst)
-			print "Vector is length {}".format(self.vecSize)
+			print("Vector is length {}".format(self.vecSize))
 		return set(lst)
 	
 	def compareDicts(self, d1,d2):
 		## only tells us what is in d2 that isn't in d1, as well as differences in values between shared keys
-		return [k for k in d2.keys() if (k not in d1.keys() or d1[k]!=d2[k])]
+		return [k for k in list(d2.keys()) if (k not in list(d1.keys()) or d1[k]!=d2[k])]
 
 	def delta(self, node1, node2):
 		if node1 is None:
@@ -146,7 +146,7 @@ class WBP(Planner):
 				 	else:
 				 		return random.choice(bestNodes)
 				else:
-					print "found 0 nodes in noveltyHeuristic"
+					print("found 0 nodes in noveltyHeuristic")
 					embed()
 
 	def rewardHeuristic(self, lst, WBP, k, surrogateCall=False):
@@ -164,7 +164,7 @@ class WBP(Planner):
 		 	else:
 		 		return random.choice(bestNodes)
 		else:
-			print "found 0 nodes in rewardHeuristic"
+			print("found 0 nodes in rewardHeuristic")
 			embed()
 
 	def BFS(self, rle):
@@ -195,7 +195,7 @@ class WBP(Planner):
 					Q.put(child)
 			else:
 				rejected.append(current)
-		print "no more states in queue"
+		print("no more states in queue")
 		embed()
 		return Q, visited, rejected
 
@@ -221,7 +221,7 @@ class WBP(Planner):
 			# embed()
 			## This is not nec. right.
 			if current is None:
-				print "got no node"
+				print("got no node")
 				embed()
 				return Q, visited, rejected
 			else:
@@ -265,11 +265,11 @@ class Node():
 					terminal, win = vrle._isDone()
 			except:
 				# pass
-				print "conditions met but copy failed"
+				print("conditions met but copy failed")
 				embed()
 		else:
 			self.reconstructed=True
-			print "copy failed; replaying from top"
+			print("copy failed; replaying from top")
 			vrle = copy.deepcopy(rle)
 			terminal, win = vrle._isDone()
 			i=0
@@ -278,9 +278,9 @@ class Node():
 				terminal, win = vrle._isDone()
 				i += 1
 		if len(self.actionSeq)>0:
-			print actionDict[self.actionSeq[-1]]
+			print(actionDict[self.actionSeq[-1]])
 		self.updateObjIDs(vrle)
-		print vrle.show()
+		print(vrle.show())
 		# if len([o for o in vrle._game.sprite_groups['bullet'] if o not in vrle._game.kill_list]) > 1:
 			# print "multiple bullets"
 			# embed()
@@ -297,14 +297,14 @@ class Node():
 		i = 0
 		for objType in vrle._game.sprite_groups:
 			for s in vrle._game.sprite_groups[objType]:
-				if s.ID not in self.WBP.objIDs.keys():
+				if s.ID not in list(self.WBP.objIDs.keys()):
 					# print "in update IDs"
 					# embed()
 					if s.name=='bullet':
 						s.ID = len([o for o in vrle._game.sprite_groups[objType] if o not in vrle._game.kill_list])
 					else:
 						s.ID = len(vrle._game.sprite_groups[objType])
-					self.WBP.objIDs[s.ID] = (len(self.WBP.objIDs.keys())+1) * (self.rle.outdim[0]*self.rle.outdim[1]+self.WBP.padding)
+					self.WBP.objIDs[s.ID] = (len(list(self.WBP.objIDs.keys()))+1) * (self.rle.outdim[0]*self.rle.outdim[1]+self.WBP.padding)
 					i+=1
 		# print len(self.WBP.objIDs.keys())
 		# print "updated {} objects".format(i)
@@ -320,12 +320,12 @@ class Node():
 		vrle = copy.deepcopy(self.rle)
 		terminal = vrle._isDone()[0]
 		i=0
-		print vrle.show()
+		print(vrle.show())
 		while not terminal:
 			a = self.actionSeq[i]
-			print actionDict[a]
+			print(actionDict[a])
 			vrle.step(a)
-			print vrle.show()
+			print(vrle.show())
 			# vrle.step((0,0))
 			# print vrle.show()
 			# embed()
@@ -390,7 +390,7 @@ if __name__ == "__main__":
 	last, visited, rejected = p.BFS2(rle)
 	# last, visited, rejected = BFS(rle, p)
 	# last, visited, rejected = BFS2(rle, p)
-	print time.time()-t1
+	print(time.time()-t1)
 	# print len(visited), len(rejected)
 	embed()
 	# if not hasattr(last, 'actionSeq'):

@@ -1,5 +1,5 @@
 from IPython import embed
-from planner import *
+from .planner import *
 import itertools
 
 from pygame.locals import K_SPACE, K_UP, K_DOWN, K_LEFT, K_RIGHT
@@ -11,12 +11,12 @@ actionDict = {K_SPACE: 'space', K_UP: 'up', K_DOWN: 'down', K_LEFT: 'left', K_RI
 class WBP(Planner):
 	def __init__(self, rle, gameString, levelString, gameFilename):
 		Planner.__init__(self, rle, gameString, levelString, gameFilename, display=1)
-		self.T = len(rle._obstypes.keys())+1 #number of object types. Adding avatar, which is not in obstypes.
+		self.T = len(list(rle._obstypes.keys()))+1 #number of object types. Adding avatar, which is not in obstypes.
 		self.vecDim = [rle.outdim[0]*rle.outdim[1], 2, self.T]
 		self.trueAtoms = set() ## set of atoms that have been true at some point thus far in the planner.
-		self.objectTypes = rle._game.sprite_groups.keys()
+		self.objectTypes = list(rle._game.sprite_groups.keys())
 		self.objectTypes.sort()
-		self.phiSize = sum([len(rle._game.sprite_groups[k]) for k in rle._game.sprite_groups.keys() if k not in ['wall', 'avatar']])
+		self.phiSize = sum([len(rle._game.sprite_groups[k]) for k in list(rle._game.sprite_groups.keys()) if k not in ['wall', 'avatar']])
 		self.objIDs = {}
 		self.maxNumObjects = 6
 		self.trackTokens = False
@@ -24,7 +24,7 @@ class WBP(Planner):
 		self.addWaitAction = True
 		self.padding = 5  ##5 is arbitrary; just to make sure we don't get overlap when we add positions
 		i=1
-		for k in rle._game.all_objects.keys():
+		for k in list(rle._game.all_objects.keys()):
 			self.objIDs[k] = i * (rle.outdim[0]*rle.outdim[1]+self.padding)
 			i+=1
 		self.addSpaceBarToActions()
@@ -33,7 +33,7 @@ class WBP(Planner):
 		## Note: if an object that isn't instantiated in the beginning is of a class that 
 		## spacebar applies to, we won't pick up on it here.
 		shootingClasses = ['MarioAvatar', 'ClimbingAvatar', 'ShootAvatar', 'Switch', 'FlakAvatar']
-		classes = [str(o[0].__class__) for o in self.rle._game.sprite_groups.values() if len(o)>0]
+		classes = [str(o[0].__class__) for o in list(self.rle._game.sprite_groups.values()) if len(o)>0]
 		spacebarAvailable = False
 		for sc in shootingClasses:
 			if any([sc in c for c in classes]):
@@ -49,7 +49,7 @@ class WBP(Planner):
 
 	def calculateAtoms(self, rle):
 		lst = []
-		for k in rle._game.sprite_groups.keys():
+		for k in list(rle._game.sprite_groups.keys()):
 			for o in rle._game.sprite_groups[k]:
 				if o not in rle._game.kill_list:
 					## turn location into vector posd2[ition (rows appended one after the other.)
@@ -71,12 +71,12 @@ class WBP(Planner):
 		lst.append(ind)
 		if not self.vecSize:
 			self.vecSize = len(lst)
-			print "Vector is length {}".format(self.vecSize)
+			print("Vector is length {}".format(self.vecSize))
 		return set(lst)
 	
 	def compareDicts(self, d1,d2):
 		## only tells us what is in d2 that isn't in d1, as well as differences in values between shared keys
-		return [k for k in d2.keys() if (k not in d1.keys() or d1[k]!=d2[k])]
+		return [k for k in list(d2.keys()) if (k not in list(d1.keys()) or d1[k]!=d2[k])]
 
 	def delta(self, node1, node2):
 		if node1 is None:
@@ -146,7 +146,7 @@ def noveltyHeuristic(lst, WBP, k, surrogateCall=False, threshold=False):
 			bestNodes = [n for n in lst if n.novelty==minNovelty]
 	 		return random.choice(bestNodes)
 		else:
-			print "found 0 nodes in noveltyHeuristic"
+			print("found 0 nodes in noveltyHeuristic")
 			embed()
 
 def rewardHeuristic(lst, WBP, k, surrogateCall=False):
@@ -164,7 +164,7 @@ def rewardHeuristic(lst, WBP, k, surrogateCall=False):
 	 	else:
 	 		return random.choice(bestNodes)
 	else:
-		print "found 0 nodes in rewardHeuristic"
+		print("found 0 nodes in rewardHeuristic")
 		embed()
 
 def BFS_noNovelty(rle, WBP):
@@ -186,7 +186,7 @@ def BFS_noNovelty(rle, WBP):
 				Q.put(child)
 		else:
 			rejected.append(current)
-	print "no more states in queue"
+	print("no more states in queue")
 	embed()
 	return Q, visited, rejected
 
@@ -210,7 +210,7 @@ def BFS(rle, WBP):
 				Q.put(child)
 		else:
 			rejected.append(current)
-	print "no more states in queue"
+	print("no more states in queue")
 	embed()
 	return Q, visited, rejected
 
@@ -227,7 +227,7 @@ def BFS3(rle, WBP):
 	i=0
 
 	def noveltySelection():
-		bestNodes = sorted(filter(lambda n: n.novelty>0, QNovelty), key=lambda n: (n.novelty, -n.metabolic_reward))
+		bestNodes = sorted([n for n in QNovelty if n.novelty>0], key=lambda n: (n.novelty, -n.metabolic_reward))
 		# print [n.novelty for n in bestNodes]
 		# embed()
 		if len(bestNodes)>0:
@@ -260,7 +260,7 @@ def BFS3(rle, WBP):
 			# return random.choice([n for n in bestNodes if n.metabolic_reward==maxReward])
 
 	def rewardSelection():
-		bestNodes = sorted(filter(lambda n:n.novelty>0, QReward), key=lambda n: (-n.metabolic_reward, n.novelty))
+		bestNodes = sorted([n for n in QReward if n.novelty>0], key=lambda n: (-n.metabolic_reward, n.novelty))
 		# print "in rewardselection"
 		# print [n.reward for n in bestNodes]
 		# embed()
@@ -296,8 +296,8 @@ def BFS3(rle, WBP):
 				QNovelty.remove(current)		
 			else:
 				QReward.remove(current)
-			print current.novelty
-			print current.lastState.show()
+			print(current.novelty)
+			print(current.lastState.show())
 			# QNovelty.remove(current)
 			# QReward.remove(current)
 			current.eval(updateNoveltyDict=True)
@@ -339,11 +339,11 @@ def BFS2(rle, WBP):
 		# embed()
 		## This is not nec. right.
 		if current is None:
-			print "got no node"
+			print("got no node")
 			embed()
 			return Q, visited, rejected
 		else:
-			print current.lastState.show()
+			print(current.lastState.show())
 			Q.remove(current)
 			current.eval(updateNoveltyDict=True)
 			visited.append(current)
@@ -383,11 +383,11 @@ class Node():
 					terminal, win = vrle._isDone()
 			except:
 				# pass
-				print "conditions met but copy failed"
+				print("conditions met but copy failed")
 				embed()
 		else:
 			self.reconstructed=True
-			print "copy failed; replaying from top"
+			print("copy failed; replaying from top")
 			vrle = copy.deepcopy(rle)
 			terminal, win = vrle._isDone()
 			i=0
@@ -415,14 +415,14 @@ class Node():
 		i = 0
 		for objType in vrle._game.sprite_groups:
 			for s in vrle._game.sprite_groups[objType]:
-				if s.ID not in self.WBP.objIDs.keys():
+				if s.ID not in list(self.WBP.objIDs.keys()):
 					# print "in update IDs"
 					# embed()
 					if s.name=='bullet':
 						s.ID = len([o for o in vrle._game.sprite_groups[objType] if o not in vrle._game.kill_list])
 					else:
 						s.ID = len(vrle._game.sprite_groups[objType])
-					self.WBP.objIDs[s.ID] = (len(self.WBP.objIDs.keys())+1) * (self.rle.outdim[0]*self.rle.outdim[1]+self.WBP.padding)
+					self.WBP.objIDs[s.ID] = (len(list(self.WBP.objIDs.keys()))+1) * (self.rle.outdim[0]*self.rle.outdim[1]+self.WBP.padding)
 					i+=1
 		# print len(self.WBP.objIDs.keys())
 		# print "updated {} objects".format(i)
@@ -438,12 +438,12 @@ class Node():
 		vrle = copy.deepcopy(self.rle)
 		terminal = vrle._isDone()[0]
 		i=0
-		print vrle.show()
+		print(vrle.show())
 		while not terminal:
 			a = self.actionSeq[i]
-			print actionDict[a]
+			print(actionDict[a])
 			vrle.step(a)
-			print vrle.show()
+			print(vrle.show())
 			# vrle.step((0,0))
 			# print vrle.show()
 			# embed()
@@ -511,8 +511,8 @@ if __name__ == "__main__":
 	# last, visited, rejected = BFS2(rle, p)
 	last, visited, rejected = BFS3(rle, p)
 
-	print time.time()-t1
-	print len(visited), len(rejected)
+	print(time.time()-t1)
+	print(len(visited), len(rejected))
 	embed()
 	# if not hasattr(last, 'actionSeq'):
 	# 	print "Failed without tracking tokens. re-trying"

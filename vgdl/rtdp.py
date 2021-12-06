@@ -1,10 +1,10 @@
 import numpy as np
 from numpy import zeros
 import pygame    
-from ontology import BASEDIRS
-from core import VGDLSprite, colorDict, sys
-from stateobsnonstatic import StateObsHandlerNonStatic 
-from rlenvironmentnonstatic import *
+from .ontology import BASEDIRS
+from .core import VGDLSprite, colorDict, sys
+from .stateobsnonstatic import StateObsHandlerNonStatic 
+from .rlenvironmentnonstatic import *
 import argparse
 import random
 from IPython import embed
@@ -14,13 +14,13 @@ from collections import defaultdict, deque
 import time
 import copy
 from threading import Lock
-from Queue import Queue
+from queue import Queue
 import multiprocessing
-from ontology import Immovable, Passive, Resource, ResourcePack, RandomNPC, Chaser, AStarChaser, OrientedSprite, Missile
-from ontology import initializeDistribution, updateDistribution, updateOptions, sampleFromDistribution, spriteInduction, selectObjectGoal
-from theory_template import TimeStep, Precondition, InteractionRule, TerminationRule, TimeoutRule, SpriteCounterRule, MultiSpriteCounterRule, \
+from .ontology import Immovable, Passive, Resource, ResourcePack, RandomNPC, Chaser, AStarChaser, OrientedSprite, Missile
+from .ontology import initializeDistribution, updateDistribution, updateOptions, sampleFromDistribution, spriteInduction, selectObjectGoal
+from .theory_template import TimeStep, Precondition, InteractionRule, TerminationRule, TimeoutRule, SpriteCounterRule, MultiSpriteCounterRule, \
 generateSymbolDict, ruleCluster, Theory, Game, writeTheoryToTxt, generateTheoryFromGame
-from rlenvironmentnonstatic import createRLInputGame
+from .rlenvironmentnonstatic import createRLInputGame
 import curses
 
 #A hack to display things to the terminal conveniently.
@@ -71,14 +71,14 @@ class QLearner:
 		try:
 			immovables = self.rle.immovables
 			self.immovables = immovables
-			print "immovables", immovables
+			print("immovables", immovables)
 		except:
 			immovables = ['wall']#,'poison']
 			self.immovables = immovables
-			print "Using defaults as immovables", immovables
+			print("Using defaults as immovables", immovables)
 
 		for i in immovables:
-			if i in self.rle._obstypes.keys():
+			if i in list(self.rle._obstypes.keys()):
 				immovable_codes.append(2**(1+sorted(self.rle._obstypes.keys())[::-1].index(i)))
 
 		actionDict = defaultdict(list)
@@ -111,7 +111,7 @@ class QLearner:
 		while len(self.rewardQueue)>0:
 			loc = self.rewardQueue.popleft()
 			if loc not in self.processed:
-				valid_neighbors = [n for n in self.neighborDict[loc] if n in self.rewardDict.keys()]
+				valid_neighbors = [n for n in self.neighborDict[loc] if n in list(self.rewardDict.keys())]
 				self.rewardDict[loc] = max([self.rewardDict[n] for n in valid_neighbors]) * self.pseudoRewardDecay
 				self.processed.append(loc)
 				for n in self.neighborDict[loc]:
@@ -141,8 +141,8 @@ class QLearner:
 	# 	return
 
 	def findObjectInRLE(self, rle, objName):
-		if objName not in rle._obstypes.keys():
-			print objName, "not in rle."
+		if objName not in list(rle._obstypes.keys()):
+			print(objName, "not in rle.")
 			# return None
 		objLocs = []
 		objCode = 2**(1+sorted(self.rle._obstypes.keys())[::-1].index(objName))
@@ -181,15 +181,15 @@ class QLearner:
 	def findObjectInState(self, s, objName):
 		##TODO: Finish last part of this function -- sometimes it can't access objloc[0][0], objloc[1][0]
 		state = np.reshape(np.fromstring(s,dtype=float), self.rle.outdim)
-		if objName not in rle._obstypes.keys():
-			print objName, "not in rle."
+		if objName not in list(rle._obstypes.keys()):
+			print(objName, "not in rle.")
 			return None
 		objCode = 2**(1+sorted(self.rle._obstypes.keys())[::-1].index(objName))
 		objLoc = np.where(state==objCode)
 		try:
 			objLoc = objLoc[0][0], objLoc[1][0] #(y,x)
 		except:
-			print "can't find objloc"
+			print("can't find objloc")
 			embed()
 		return objLoc
 
@@ -212,7 +212,7 @@ class QLearner:
 					q.append((neighbor, path + [neighbor]))
 
 		if node != goal_loc:
-			print "didn't find path to goal in getSubgoals (in getPathToGoal)"
+			print("didn't find path to goal in getSubgoals (in getPathToGoal)")
 			return False
 			# embed()
 			# raise Exception("Didn't find a path to the goal location.")
@@ -223,14 +223,14 @@ class QLearner:
 		## find location of goal, add to rewardDict.
 		## also add neighbors of goal rewardQueue.
 		##TODO: update this if goal moves!!
-		if "goal" not in self.rle._obstypes.keys():
-			print "no goal to get subgoals to"
+		if "goal" not in list(self.rle._obstypes.keys()):
+			print("no goal to get subgoals to")
 			return []
 		goal_code = 2**(1+sorted(self.rle._obstypes.keys())[::-1].index("goal"))
 		killerObjectCodes = []
 		if hasattr(self.rle, 'killerObjects'):
 			for o in self.rle.killerObjects:
-				if o in self.rle._obstypes.keys():
+				if o in list(self.rle._obstypes.keys()):
 					killerObjectCodes.append(2**(1+sorted(self.rle._obstypes.keys())[::-1].index(o)))
 		board = np.reshape(self.rle._getSensors(), self.rle.outdim)
 		goal_loc = np.where(board==goal_code)
@@ -272,7 +272,7 @@ class QLearner:
 								# print "found altered path", path[subgoal_index+i]
 								break
 						except:
-							print "indices didn't work out in looking for different path"
+							print("indices didn't work out in looking for different path")
 				# self.subgoals.append(path[subgoal_index])
 
 		
@@ -303,9 +303,9 @@ class QLearner:
 			nextLoc = currentLoc[0]+a[1], currentLoc[1]+a[0] #again, locations are (y,x) and actions are (x,y)
 		else:
 			return 0.
-		if nextLoc in self.rewardDict.keys():
+		if nextLoc in list(self.rewardDict.keys()):
 			return self.rewardDict[nextLoc]
-		elif currentLoc in self.rewardDict.keys():
+		elif currentLoc in list(self.rewardDict.keys()):
 			return self.rewardDict[currentLoc]
 		else:
 			return 0.
@@ -499,7 +499,7 @@ class QLearner:
 			self.V[s] = self.QVals[(s,a)]
 			rle = simulationResults[a]
 			## UNCOMMENT HERE IF YOU WANT TO WATCH Q-learner learning.
-			print rle.show()
+			print(rle.show())
 			terminal = rle._isDone()[0]
 			i += 1
 			if not terminal:
@@ -541,19 +541,19 @@ class QLearner:
 			actions.append(a)
 			res = rle.step(a)
 			if showActions:
-				print rle.show()
+				print(rle.show())
 			terminal = rle._isDone()[0]
 			s = res['observation'].tostring()
 		return actions
 
 	def backwardsPlayback(self):
-		lst = [(k,v) for k,v in self.QVals.iteritems()]
+		lst = [(k,v) for k,v in self.QVals.items()]
 		slist = sorted(lst, key=lambda x:x[1])
 		slist.reverse()
 		for l in slist:
 			if l[1]>0:
-				print np.reshape(np.fromstring(l[0][0],dtype=float),self.rle.outdim)
-				print l[1]
+				print(np.reshape(np.fromstring(l[0][0],dtype=float),self.rle.outdim))
+				print(l[1])
 
 if __name__ == "__main__":
 	
@@ -567,10 +567,10 @@ if __name__ == "__main__":
 	gameString, levelString = defInputGame(gameFilename, randomize=True)
 	rleCreateFunc = lambda: createRLInputGame(gameFilename)
 	rle = rleCreateFunc()
-	print rle.show()
+	print(rle.show())
 	# rle.immovables = ['wall', 'poison1', 'poison2']
-	print ""
-	print "Initializing learner. Playing", gameFilename
+	print("")
+	print("Initializing learner. Playing", gameFilename)
 	ql = QLearner(rle, gameString, levelString, alpha=1, epsilon=.5, gamma=.9, episodes=1000)
 	# ql.getBestActionsForPlayout(False, True)
 	# for x in range(10):
@@ -581,7 +581,7 @@ if __name__ == "__main__":
 	# ql.runEpisode()
 	ql.learn(50, satisfice=10)
 	t2 = time.time() - t1
-	print "done in {} seconds".format(t2)
+	print("done in {} seconds".format(t2))
 	# ql.learn(100, satisfice=False)
 
 	embed()

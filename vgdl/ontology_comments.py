@@ -7,8 +7,8 @@ Video game description language -- ontology of concepts.
 from random import choice, random
 from math import sqrt
 import pygame
-from tools import triPoints, unitVector, vectNorm, oncePerStep
-from ai import AStarWorld
+from .tools import triPoints, unitVector, vectNorm, oncePerStep
+from .ai import AStarWorld
 from IPython import embed
 
 # ---------------------------------------------------------------------
@@ -202,7 +202,7 @@ class GravityPhysics(ContinuousPhysics):
 # ---------------------------------------------------------------------
 #     Sprite types
 # ---------------------------------------------------------------------
-from core import VGDLSprite, Resource
+from .core import VGDLSprite, Resource
 '''
 In updateOptions function, object_info has form 
     {'position':(ob.rect.left, ob.rect.right), 'features':features, 'type': type_vector}
@@ -306,7 +306,7 @@ class RandomNPC(VGDLSprite):
         for option in options:
 
             left, top = self.physics.calculateActiveMovement(self, option)
-            if (left, top) in position_options.keys():
+            if (left, top) in list(position_options.keys()):
                 position_options[(left, top)] += 1.0/len(options) 
             else:
                 position_options[(left, top)] = 1.0/len(options)
@@ -445,7 +445,7 @@ class Chaser(RandomNPC): ##
 
         for option in options:
             pos = self.physics.activeMovement(self, option)
-            if pos in position_options.keys():
+            if pos in list(position_options.keys()):
                 position_options[pos] += 1.0/len(options) 
             else:
                 position_options[pos] = 1.0/len(options)
@@ -463,7 +463,7 @@ class Chaser(RandomNPC): ##
 
         for option in options:
             left, top = self.physics.calculateActiveMovement(self, option)
-            if (left, top) in position_options.keys():
+            if (left, top) in list(position_options.keys()):
                 position_options[(left, top)] += 1.0/len(options) 
             else:
                 position_options[(left, top)] = 1.0/len(options)
@@ -603,7 +603,7 @@ class AStarChaser(RandomNPC): ##
 # ---------------------------------------------------------------------
 #     Avatars: player-controlled sprite types
 # ---------------------------------------------------------------------
-from core import Avatar
+from .core import Avatar
 
 class MovingAvatar(VGDLSprite, Avatar):
     """ Default avatar, moves in the 4 cardinal directions. """
@@ -874,7 +874,7 @@ class MarioAvatar(InertialAvatar):
 # ---------------------------------------------------------------------
 #     Termination criteria
 # ---------------------------------------------------------------------
-from core import Termination
+from .core import Termination
 
 class Timeout(Termination):
     def __init__(self, limit=0, win=False):
@@ -905,7 +905,7 @@ class MultiSpriteCounter(Termination):
     def __init__(self, limit=0, win=True, **kwargs):
         self.limit = limit
         self.win = win
-        self.stypes = kwargs.values()
+        self.stypes = list(kwargs.values())
 
     def isDone(self, game):
         if sum([game.numSprites(st) for st in self.stypes]) == self.limit:
@@ -1270,7 +1270,7 @@ def updateOptions(game, sprite_type, current_sprite):
             left, top = current_sprite.physics.calculateActiveMovement(current_sprite, option) #TODO: Check why this calculation isn't correct
 
             ## was rect.left, rect.top
-            if (left, top) in position_options.keys():
+            if (left, top) in list(position_options.keys()):
                 position_options[(left, top)] += 1.0/len(options) 
             else:
                 position_options[(left, top)] = 1.0/len(options)

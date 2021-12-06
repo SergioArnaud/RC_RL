@@ -52,5 +52,5 @@ def Levenshtein(s1, s2):
 			count += 1
 	for i in range(len(to_remove)):
 		s2.remove(to_remove[i])
-	print 'count', count
+	print('count', count)
 	return 1./(1+count)

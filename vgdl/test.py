@@ -1,8 +1,8 @@
 from theory_template_080116 import Game, TimeStep
-from sampleVGDLString import *
-from taxonomy import *
+from .sampleVGDLString import *
+from .taxonomy import *
 from class_theory_template_071916 import *
-from induction import runInduction_DFS
+from .induction import runInduction_DFS
 from IPython import embed
 import time, ast
 
@@ -30,16 +30,16 @@ def testTrace(vgdlFile, gameOutputFile, expectedHypotheses, name, maxNumTheories
 	end = time.time()
 
 	# Useful for quick view of test results
-	print "########################"
-	print "Checking {}...".format(name)
-	print "TIME TO RUN: {}".format(end-start)
-	print "Expected number of hypotheses {} = actual number of hypotheses {}? {}".format(expectedHypotheses, len(hypotheses), expectedHypotheses==len(hypotheses))
+	print("########################")
+	print("Checking {}...".format(name))
+	print("TIME TO RUN: {}".format(end-start))
+	print("Expected number of hypotheses {} = actual number of hypotheses {}? {}".format(expectedHypotheses, len(hypotheses), expectedHypotheses==len(hypotheses)))
 	
 	if expectedHypotheses==len(hypotheses): 	# TODO: Are there other parameters which we want to check?
-		print ">>>> PASS!"
+		print(">>>> PASS!")
 	else:
-		print ">>>> FAIL :("
-	print "\n########################\n\n\n\n\n\n\n"
+		print(">>>> FAIL :(")
+	print("\n########################\n\n\n\n\n\n\n")
 
 	return hypotheses
 
@@ -61,16 +61,16 @@ def testMultipleTraces(rawTraces, expectedHypotheses, names, verbose):
 
 	hypotheses=list(g.inductionOverMultipleTraces(traces, verbose))
 	end = time.time()
-	print "########################"
-	print "Checking {}...".format(names)
-	print "TIME TO RUN: {}".format(end-start)
-	print "Expected number of hypotheses {} = actual number of hypotheses {}? {}".format(expectedHypotheses, len(hypotheses), expectedHypotheses==len(hypotheses))
+	print("########################")
+	print("Checking {}...".format(names))
+	print("TIME TO RUN: {}".format(end-start))
+	print("Expected number of hypotheses {} = actual number of hypotheses {}? {}".format(expectedHypotheses, len(hypotheses), expectedHypotheses==len(hypotheses)))
 	if expectedHypotheses==len(hypotheses):
-		print ">>>> PASS!"
+		print(">>>> PASS!")
 	else:
-		print ">>>> FAIL :("
+		print(">>>> FAIL :(")
 	# TODO: Are there other parameters which we want to check?
-	print "\n########################\n\n\n\n\n\n\n"
+	print("\n########################\n\n\n\n\n\n\n")
 	# embed()
 	return hypotheses
 

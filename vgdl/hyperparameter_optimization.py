@@ -1,6 +1,6 @@
 from hyperopt import fmin, tpe, hp
 from pathos.multiprocessing import ProcessingPool
-from main_agent import Agent
+from .main_agent import Agent
 import time
 import dill
 
@@ -30,7 +30,7 @@ def play_trainset(hyperparameters, game_number):
 
     def gen_color():
     	from vgdl.colors import colorDict
-    	color_list = colorDict.values()
+    	color_list = list(colorDict.values())
     	color_list = [c for c in color_list if c not in ['UUWSWF']]
     	for color in color_list:
     		yield color
@@ -96,4 +96,4 @@ def optimize_game(game_number):
         f.write(str(best))
 
 pool = ProcessingPool(nodes=10)
-pool.map(optimize_game, range(10))
+pool.map(optimize_game, list(range(10)))

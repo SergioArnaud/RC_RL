@@ -137,7 +137,7 @@ def alphabeta_search(state, game, d=4, cutoff_test=None, eval_fn=None):
 
 def query_player(game, state):
     "Make a move by querying standard input."
-    move_string = input('Your move? ')
+    move_string = eval(input('Your move? '))
     try:
         move = eval(move_string)
     except NameError:
@@ -284,8 +284,8 @@ class TicTacToe(Game):
         board = state.board
         for x in range(1, self.h + 1):
             for y in range(1, self.v + 1):
-                print board.get((x, y), '.')
-            print
+                print(board.get((x, y), '.'))
+            print()
 
     def compute_utility(self, board, move, player):
         "If 'X' wins with this move, return 1; if 'O' wins return -1; else return 0."
