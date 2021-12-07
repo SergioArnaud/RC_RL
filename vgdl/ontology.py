@@ -45,7 +45,6 @@ class GridPhysics():
     """ Define actions and key-mappings for grid-world dynamics. """
     def passiveMovement(self, sprite):
         # print "passive movement for", sprite.name
-        print(sprite.__dict__)
         if sprite.speed is None:
             speed = 1
         else:

@@ -105,9 +105,12 @@ class VGDLParser(object):
         """ Whatever is visible in the global namespace (after importing the ontologies)
         can be used in the VGDL, and is evaluated.
         """
-        from .ontology import SpawnPoint, Immovable, Missile, MovingAvatar, killSprite
-        from .ontology import changeResource, pullWithIt, stepBack, nothing
-        from .ontology import killIfHasLess, wrapAround, SpriteCounter, Timeout
+        #from .ontology import SpawnPoint, Immovable, Missile, MovingAvatar, killSprite
+        #from .ontology import changeResource, pullWithIt, stepBack, nothing
+        #from .ontology import killIfHasLess, wrapAround, SpriteCounter, Timeout
+        #from ontology import *
+
+        from .ontology import random, choice, deepcopy, GREEN, BLUE, RED, GRAY, WHITE, BROWN, BLACK, ORANGE, YELLOW, PINK, GOLD, LIGHTRED, LIGHTORANGE, LIGHTBLUE, LIGHTGREEN, LIGHTGRAY, DARKGRAY, DARKBLUE, PURPLE, FUSCHA, LIGHTFUSCHA, RESOURCETOADD, ENDOFSCREEN, SCORECOLOR, RSQPUS, LMZTUO, VYPDQP, VNUJQV, EWZHFR, JLEBVX, TCTHBN, PPOSXQ, PZUPHU, QSWMOZ, XPFNZB, QZVIHJ, IECTMM, DSLBHZ, NNXTPH, VSIWDJ, FSDLDR, ZBUKBZ, WFJBDY, SFZFVC, XUUYXP, IUCUFJ, SELSNW, RQEVUC, VUERDP, BPTHDK, ECPCTK, HQICBN, JYXSCJ, KXHVVM, NCVLNB, DLLJEV, JIOQMO, TVUEMH, PPMELW, MZBUTY, LKLWDD, IUTBND, ZKXVVB, EZLHWK, OYEYOX, FXQLLE, JHXDKF, FVNBXZ, SUHUEL, SQYLIY, CQISPW, CCKQQB, IJBUWM, CCVIDF, BONLZE, PDEQVQ, JPOSPB, ZTSCUL, BVUTFD, JBTDKH, QUHQXK, OQCZME, RNDCCC, IMBEXR, XTOSVV, DZYCEK, BOQTWB, WJIDVE, EONWMR, JCWDMB, JKYQKK, MQEJFT, QMDTIK, BDQVRW, BPEQXN, VPCKIC, QUMRRU, MKUEDB, CCCQPN, HCFCUW, TFDXMS, ZYWQBZ, MHFZEQ, HZZQRH, ZXQYUC, KZHXRM, IJRXPC, YZYPTX, IEOBUR, MRVJZM, MTODRQ, VRPIWW, BZYZDJ, OMBDHZ, QEDYZV, DKHPYF, JCRNMZ, SHOBXO, DWBTUH, MCKLTV, DTMTLN, VFSSFR, XYQVMP, NDINZN, FFKHKD, QMIWED, SFPCWM, PPTTUZ, SXMBCO, OUCNVN, FMXEZI, MYXOHJ, DZLLCX, CLWOJZ, VVDOEV, CWTKFM, XUMCHF, MMQXRZ, ZFZCIB, DTIZDF, KMFSEE, OFRXBV, JTNWQF, PVQDZQ, IOQEEF, LBLFCJ, LRSPUS, TDLEMS, YOYTZM, KSXCRX, KRYQTZ, QTLHNJ, CVHTTO, WLMEZR, CMBDTF, LBOJWZ, CDMHFV, ENKXEZ, NNZXQZ, OFPSUE, VNZEDJ, MWVUHQ, EDXSMT, HTEOCR, QIBKBT, XVTHBZ, DVBXBT, OIWCSZ, WSOTBR, IHYILT, DSRBEO, NUPHKK, SCJPNE, MPUYEI, colorDict, itertools, sqrt, pygame, np, scipy, triPoints, unitVector, vectNorm, oncePerStep, AStarWorld, embed, core, copy, time, Rect, defaultdict, UP, DOWN, LEFT, RIGHT, BASEDIRS, spriteToParams, GridPhysics, ContinuousPhysics, NoFrictionPhysics, GravityPhysics, VGDLSprite, Resource, Immovable, Passive, ResourcePack, Flicker, Spreader, SpriteProducer, Portal, SpawnPoint, RandomNPC, OrientedSprite, Conveyor, Missile, Switch, OrientedFlicker, Walker, WalkJumper, RandomInertial, RandomMissile, ErraticMissile, Bomber, Chaser, Fleeing, AStarChaser, Avatar, MovingAvatar, HorizontalAvatar, VerticalAvatar, FlakAvatar, OrientedAvatar, RotatingAvatar, RotatingFlippingAvatar, NoisyRotatingFlippingAvatar, ShootAvatar, AimedAvatar, AimedFlakAvatar, InertialAvatar, MarioAvatar, ClimbingAvatar, FrostBiteAvatar, Floe, FrostbiteIgloo, Conditional, SpriteCount, OnStart, Termination, Timeout, SpriteCounter, MultiSpriteCounter, NoveltyTermination, getColor, nothing, killSprite, cloneSprite, transformTo, transformToOnLanding, triggerOnLanding, stepBack, undoAll, bounceForward, conveySprite, windGust, slipForward, attractGaze, turnAround, turn, reverseDirection, reverseFloeIfActivated, trigger, detrigger, flipDirection, bounceDirection, wallBounce, wallStop, killIfSlow, killIfFromAbove, killIfAlive, collectResource, changeResource, changeScore, spawnIfHasMore, killIfHasMore, killIfOtherHasMore, killIfHasLess, killIfOtherHasLess, wrapAround, pullWithIt, collideFromAbove, killSpriteOnLanding, teleportToExit, stochastic_effects, kill_effects, canActivateSwitch, cannotActivateSwitch, sprite_types, getSpeed, getFleeing, getOrientation, getStype, getCooldown, chaserClosestTargets, chaserMovesToward, setSpriteParams, calculateSpriteMove, getTargets, updateOptions, initializeDistribution, initializeDistributionArgs, distributionInitSetup, updateDistribution, sampleFromDistribution, checkIfDistributionsHaveChanged, getKL, spriteInduction, softmax, selectObjectGoal
 
         return eval(estr)
 
@@ -1510,8 +1513,7 @@ class VGDLSprite(object):
     def _updatePos(self, orientation, speed=None):
         if speed is None:
             speed = self.speed
-        
-        print(orientation)
+    
         if (self.lastmove+1)%self.cooldown==0 and abs(orientation[0])+abs(orientation[1])!=0:
             self.rect = self.rect.move((orientation[0]*speed, orientation[1]*speed))
 
