@@ -407,7 +407,6 @@ class BasicGame(object):
 
         for key in pos:
             for loc in pos[key]:
-                print loc
                 self._createSprite([key],(loc[0]*self.block_size,loc[1]*self.block_size))
 
         self.kill_list=[]
