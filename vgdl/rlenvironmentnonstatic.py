@@ -417,7 +417,6 @@ class RLEnvironmentNonStatic( StateObsHandlerNonStatic):
             action = (0,0)
         pre_step_score = self._game.score
         # t1 = time.time()
-        print(action)
         events = self._performAction(action)
         # embed()
         # observation = self._getSensors()
