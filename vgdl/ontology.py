@@ -6,16 +6,16 @@ Video game description language -- ontology of concepts.
 import random
 from random import choice
 from copy import deepcopy
-from colors import *
+from .colors import *
 import itertools
 from math import sqrt
 import pygame
 import numpy as np
 import scipy.stats
-from tools import triPoints, unitVector, vectNorm, oncePerStep
-from ai import AStarWorld
+from .tools import triPoints, unitVector, vectNorm, oncePerStep
+from .ai import AStarWorld
 from IPython import embed
-import core
+from . import core
 import copy
 # import ipdb
 import time
@@ -162,7 +162,7 @@ class ContinuousPhysics(GridPhysics):
 
 
     def activeMovement(self, sprite, action, speed=None):
-        print self.gridsize
+        print(self.gridsize)
         """ Here the assumption is that the controls determine the direction of
         acceleration of the sprite. """
         if speed is None:
@@ -528,7 +528,7 @@ class AStarChaser(VGDLSprite): ##
         # Will not update AStarChaser if there is nothing to chase
         killed = [s.name for s in game.kill_list]
         if 'avatar' in killed:
-            print "avatar is dead"
+            print("avatar is dead")
             return
 
         if game.time % 5 == 0:
@@ -537,24 +537,24 @@ class AStarChaser(VGDLSprite): ##
         # print 'in astar', [world.get_sprite_tile_position(p.sprite) for p in path]
         # Uncomment below to draw debug paths.
         # self._setDebugVariables(world,path)
-        print 'updating'
-        print len(self.path)
+        print('updating')
+        print(len(self.path))
         if self.path:
             # n = min(5, len(self.path)-1)
 
 
             if self.next_move == None:
-                print 'popping off next path node'
+                print('popping off next path node')
                 # self.path.pop(0)
                 self.next_move = self.path.pop(0)
-                print self.next_move.sprite.rect, self.rect
+                print(self.next_move.sprite.rect, self.rect)
 
             next_x, next_y = self.next_move.sprite.rect.x, self.next_move.sprite.rect.y
             self_x, self_y = self.rect.x, self.rect.y
 
 
-            print next_x, next_y
-            print self_x, self_y
+            print(next_x, next_y)
+            print(self_x, self_y)
 
             dx = abs(next_x - self_x)
             dy = abs(next_y - self_y)
@@ -567,7 +567,7 @@ class AStarChaser(VGDLSprite): ##
             if dx < error and dy < error:
                 self.last_move = self.next_move
                 self.next_move = None
-            print dx, dy, movement
+            print(dx, dy, movement)
 
             self.physics.activeMovement(self, movement)
 
@@ -1102,7 +1102,7 @@ class MultiSpriteCounter(Termination):
         self.limit = limit
         self.win = win
         self.bonus = bonus
-        self.stypes = kwargs.values()
+        self.stypes = list(kwargs.values())
         self.name = 'MultiSpriteCounter'
 
     def isDone(self, game):
@@ -1612,7 +1612,7 @@ def collectResource(sprite, partner, game, resource=None, value=1, limit=None): 
             r = sprite.resourceType
             partner.resources[r] = max(-1, min(partner.resources[r]+sprite.value, game.resources_limits[r]))
         else:
-            r = partner.resources.keys()[0]
+            r = list(partner.resources.keys())[0]
             value=1
             partner.resources[r] = max(-1, min(partner.resources[r]+value, game.resources_limits[r]))
     else:
@@ -1623,7 +1623,7 @@ def collectResource(sprite, partner, game, resource=None, value=1, limit=None): 
 
     killSprite(sprite, partner, game)
     args = {'resource':sprite.name, 'value':value, 'limit':game.resources_limits[sprite.name]}
-    print "collectResource", partner.resources
+    print("collectResource", partner.resources)
     #print 'Collected ', colorDict[str(sprite.color)]#partner.resources[r]
     # return ('collectResource', colorDict[str(partner.color)], colorDict[str(sprite.color)])
     return ('collectResource' , sprite.ID, partner.ID, args)
@@ -1703,7 +1703,7 @@ def pullWithIt(sprite, partner, game):
     try:
         sprite._updatePos(v, partner.speed * sprite.physics.gridsize[0])
     except:
-        print "problem in pullwithit"
+        print("problem in pullwithit")
         embed()
     if isinstance(sprite.physics, ContinuousPhysics):
         sprite.speed = partner.speed
@@ -1901,7 +1901,7 @@ def getTargets(game, targetColor):
     t1 = time.time()
     if targetColor not in game.targetColorDict:
         try:
-            targetName = [k for k in game.sprite_groups.keys() if game.sprite_groups[k] and game.sprite_groups[k][0].colorName==targetColor][0]
+            targetName = [k for k in list(game.sprite_groups.keys()) if game.sprite_groups[k] and game.sprite_groups[k][0].colorName==targetColor][0]
             targets = [s for s in game.sprite_groups[targetName] if s not in game.kill_list]
             # print "target name: {}. target length: {}".format(targetName, len(targets))
         except:
@@ -1965,7 +1965,7 @@ def updateOptions(game, sprite_type_tuple, current_sprite, params={}, missileOri
                 # if left!=left1 or top!=top1:
                     # print "got different positions"
                     # embed()
-                if (left, top) in position_options.keys():
+                if (left, top) in list(position_options.keys()):
                     position_options[(left, top)] += 1.0/len(options)
                 else:
                     position_options[(left, top)] = 1.0/len(options)
@@ -1992,7 +1992,7 @@ def updateOptions(game, sprite_type_tuple, current_sprite, params={}, missileOri
         for option in BASEDIRS:
             # left, top = calculateSpriteMove(game, current_sprite, speed, option)
             left, top = current_sprite.physics.calculateActiveMovement(current_sprite, option, speed=speed)
-            if (left, top) in position_options.keys():
+            if (left, top) in list(position_options.keys()):
                 position_options[(left, top)] += 1.0/len(BASEDIRS)
             else:
                 position_options[(left, top)] = 1.0/len(BASEDIRS)
@@ -2133,7 +2133,7 @@ def distributionInitSetup(game, sprite):
     'sprite' is an object ID
     """
     objectColors = set()
-    for k in game.sprite_constr.keys():
+    for k in list(game.sprite_constr.keys()):
         try:
             if game.sprite_constr[k][1]['color'] not in ['BLACK', 'DARKGRAY', 'MPUYEI', 'NUPHKK', 'SCJPNE']:
                 objectColors.add(colorDict[str(game.sprite_constr[k][1]['color'])])
@@ -2141,14 +2141,14 @@ def distributionInitSetup(game, sprite):
             continue
     objectColors = list(objectColors)
     if 'DTIZDF' in objectColors:
-        print "found DTIZDF"
+        print("found DTIZDF")
         embed()
     game.spriteDistribution[sprite] = initializeDistribution(sprite_types, objectColors) # Indexed by object ID
     # game.object_token_spriteDistribution[sprite] = initializeDistribution(sprite_types, objectColors) # Indexed by object ID
-    if sprite not in game.all_objects.keys():
+    if sprite not in list(game.all_objects.keys()):
         game.all_objects[sprite] = game.getObjects()[sprite]
 
-    game.movement_options[sprite] = {k:{} for k in game.spriteDistribution[sprite].keys()}
+    game.movement_options[sprite] = {k:{} for k in list(game.spriteDistribution[sprite].keys())}
     # game.object_token_movement_options[sprite] = {k:{} for k in game.spriteDistribution[sprite].keys()}
 
 
@@ -2198,9 +2198,9 @@ def updateDistribution(game, sprite, curr_distribution, movement_options, outcom
         # embed()
 
 
-    if sprite in curr_distribution.keys():
-        for param_combination in curr_distribution[sprite].keys():
-            if outcome in movement_options[sprite][param_combination].keys():
+    if sprite in list(curr_distribution.keys()):
+        for param_combination in list(curr_distribution[sprite].keys()):
+            if outcome in list(movement_options[sprite][param_combination].keys()):
                 if missileOrientationClustering and 'Missile' in str(param_combination[0][1]):
                     normalization_ratio += curr_distribution[sprite][param_combination] * (movement_options[sprite][param_combination][outcome]**alpha)
                 else:
@@ -2208,9 +2208,9 @@ def updateDistribution(game, sprite, curr_distribution, movement_options, outcom
             else:
                 normalization_ratio += curr_distribution[sprite][param_combination] * epsilon_prob
 
-    if sprite in curr_distribution.keys():
-        for param_combination in curr_distribution[sprite].keys():
-            if outcome in movement_options[sprite][param_combination].keys():
+    if sprite in list(curr_distribution.keys()):
+        for param_combination in list(curr_distribution[sprite].keys()):
+            if outcome in list(movement_options[sprite][param_combination].keys()):
                 if missileOrientationClustering and 'Missile' in str(param_combination[0][1]):
                     curr_distribution[sprite][param_combination] *= ((movement_options[sprite][param_combination][outcome]**alpha) / normalization_ratio)
                 else:
@@ -2347,8 +2347,8 @@ def sampleFromDistribution(game, curr_distribution, all_objects, spriteUpdateDic
 
     import random
     import numpy as np
-    from class_theory_template import Sprite
-    from ontology import ResourcePack
+    from .class_theory_template import Sprite
+    from .ontology import ResourcePack
 
     distributionsHaveChanged = False
 
@@ -2358,7 +2358,7 @@ def sampleFromDistribution(game, curr_distribution, all_objects, spriteUpdateDic
     ##remove avatar. For now let's just assume we know which one it is.
     ##TODO: You need to do avatarInduction, unless there's a generic type that can cover all types.
     non_avatar_keys = []
-    for k in all_objects.keys():
+    for k in list(all_objects.keys()):
         if all_objects[k]['sprite'].name != 'avatar':
             non_avatar_keys.append(k)
         else:
@@ -2384,7 +2384,7 @@ def sampleFromDistribution(game, curr_distribution, all_objects, spriteUpdateDic
                     exceptions.append(ao_color)
 
                 except AttributeError:
-                    print "tried and failed to add a shooting avatar type"
+                    print("tried and failed to add a shooting avatar type")
                     # embed()
                     # No args in avatar
                     sample.append(Sprite(vgdlType=MovingAvatar, color=all_objects[k]['type']['color']))
@@ -2437,23 +2437,23 @@ def sampleFromDistribution(game, curr_distribution, all_objects, spriteUpdateDic
         ## Integrate evidence across all episodes; pick best hypothesis.
 
         numDict = defaultdict(lambda:[])
-        for k in bestSpriteTypeDict[obj_type].keys():
+        for k in list(bestSpriteTypeDict[obj_type].keys()):
             numDict[spriteUpdateDict[k]].append(k)
 
         try:
-            param_sum = {k:0. for k in bestSpriteTypeDict[obj_type].values()[0].keys()}
+            param_sum = {k:0. for k in list(bestSpriteTypeDict[obj_type].values())[0].keys()}
         except IndexError:
             # bestSpriteTypeDict has yet to be populated for this object type
-            for k, v in game.getObjects().items():
+            for k, v in list(game.getObjects().items()):
                 if v['features']['color'] == obj_type:
                     bestSpriteTypeDict[obj_type][k] = game.spriteDistribution[k]
-            param_sum = {k:1. for k in bestSpriteTypeDict[obj_type].values()[0].keys()}
+            param_sum = {k:1. for k in list(bestSpriteTypeDict[obj_type].values())[0].keys()}
 
         param_z = 0
 
-        for num, IDs in numDict.items():
+        for num, IDs in list(numDict.items()):
             # param_product = {k:1. for k in bestSpriteTypeDict[obj_type].values()[0].keys()}
-            for param in param_sum.keys():
+            for param in list(param_sum.keys()):
                 # param_sum[param] += num*np.prod([bestSpriteTypeDict[obj_type][ID][param] for ID in IDs])/float(len(IDs))
                 # param_z += num*np.prod([bestSpriteTypeDict[obj_type][ID][param] for ID in IDs])/float(len(IDs))
 
@@ -2473,7 +2473,7 @@ def sampleFromDistribution(game, curr_distribution, all_objects, spriteUpdateDic
                         )
                         tmp_prod *= bestSpriteTypeDict[obj_type][ID][randomnpc_param]
                     else:
-                        print "problem in param_product"
+                        print("problem in param_product")
                         embed()
 
                 param_sum[param] += num*tmp_prod
@@ -2483,7 +2483,7 @@ def sampleFromDistribution(game, curr_distribution, all_objects, spriteUpdateDic
                 # param_z += param_product[param]
         
         if param_z != 0:
-            for param,val in param_sum.items():
+            for param,val in list(param_sum.items()):
                 param_sum[param] /= param_z
 
 
@@ -2616,40 +2616,40 @@ def sampleFromDistribution(game, curr_distribution, all_objects, spriteUpdateDic
                     if s.vgdlType!=matchingSprite.vgdlType:
                         distributionsHaveChanged = True
                         if display:
-                            print ("Distributions for {} have changed from sprite type {} to {}".format(s.color, matchingSprite.vgdlType, s.vgdlType))
+                            print(("Distributions for {} have changed from sprite type {} to {}".format(s.color, matchingSprite.vgdlType, s.vgdlType)))
                     # If one of the args is None but not the other,
                     # distributionsHaveChanged is true
                     elif ((s.args==None and matchingSprite.args!=None) or
                         (s.args!=None and matchingSprite.args==None)):
                         distributionsHaveChanged = True
                         if display:
-                            print ("Distribution args for {} have changed from {} to {}".format(s.color, s.args, matchingSprite.args))
+                            print(("Distribution args for {} have changed from {} to {}".format(s.color, s.args, matchingSprite.args)))
                     elif (s.args and matchingSprite.args) != None:
                         # If args are different, except for the case where only an
                         # orientation is reversed (e.g. turnAround), then
                         # distributionsHaveChanged is true
-                        for key in s.args.keys() + matchingSprite.args.keys():
+                        for key in list(s.args.keys()) + list(matchingSprite.args.keys()):
                             try:
                                 if not ((s.args[key] and matchingSprite.args[key])
                                     in ([LEFT, RIGHT] or [UP, DOWN])):
                                     if s.args[key] != matchingSprite.args[key]:
                                         distributionsHaveChanged = True
                                     if display:
-                                        print ("Distribution args for {} have changed from {} to {}".format(s.color, s.args, matchingSprite.args))
+                                        print(("Distribution args for {} have changed from {} to {}".format(s.color, s.args, matchingSprite.args)))
                             except KeyError:
                                 # If the new sprite has an arg that the old one
                                 # doesn't, or vice-versa, then
                                 # distributionsHaveChanged is true
                                 distributionsHaveChanged = True
                                 if display:
-                                    print ("Distribution args for {} have changed from {} to {}".format(s.color, s.args, matchingSprite.args))
+                                    print(("Distribution args for {} have changed from {} to {}".format(s.color, s.args, matchingSprite.args)))
 
                 else:
                     # print s.color, oldSpriteSet
                     # embed()
                     distributionsHaveChanged = True
         except:
-            print "failed to find matching object in sampleFromDistribution"
+            print("failed to find matching object in sampleFromDistribution")
             embed()
 
         # param = dict(best_param[1:])
@@ -2667,8 +2667,8 @@ def checkIfDistributionsHaveChanged(game, spriteUpdateDict, bestSpriteTypeDict):
 
     ## We don't do sprite inference for the avatar and for Flak
     non_avatar_keys = []
-    for k in all_objects.keys():
-        if all_objects[k]['sprite'].name is not 'avatar':
+    for k in list(all_objects.keys()):
+        if all_objects[k]['sprite'].name != 'avatar':
             non_avatar_keys.append(k)
         # else:
             # exceptions.append('BLUE')
@@ -2678,7 +2678,7 @@ def checkIfDistributionsHaveChanged(game, spriteUpdateDict, bestSpriteTypeDict):
                                                                                                     ## and not doing inference about it.
     for obj_type in types:
         ## find the most-updated object, use that one for the sprite hypothesis.
-        options = [k for k in all_objects.keys() if all_objects[k]['type']['color'] == obj_type]
+        options = [k for k in list(all_objects.keys()) if all_objects[k]['type']['color'] == obj_type]
         k = max(options, key=lambda x:spriteUpdateDict[x])
 
         oldDistribution = bestSpriteTypeDict[obj_type]['distribution']
@@ -2688,8 +2688,8 @@ def checkIfDistributionsHaveChanged(game, spriteUpdateDict, bestSpriteTypeDict):
             ## always alphabetize the keys
             ## sample multinomially from the spriteDistribution[key] dictionary, to get the spriteType
             ## add that to the color info for that object.
-            if k not in curr_distribution.keys():
-                print k, "not in curr_distribution"
+            if k not in list(curr_distribution.keys()):
+                print(k, "not in curr_distribution")
                 embed()
             sprite_possibilities = curr_distribution[k]
         else:
@@ -2700,7 +2700,7 @@ def checkIfDistributionsHaveChanged(game, spriteUpdateDict, bestSpriteTypeDict):
     return False
 
 def getKL(spriteDistribution1, spriteDistribution2):
-    d1, d2 = [v['prob'] for v in spriteDistribution1.values()], [v['prob'] for v in spriteDistribution2.values()]
+    d1, d2 = [v['prob'] for v in list(spriteDistribution1.values())], [v['prob'] for v in list(spriteDistribution2.values())]
     return scipy.stats.entropy(d1,d2)
 
 
@@ -2761,13 +2761,13 @@ def spriteInduction(game, step, bestSpriteTypeDict, oldSpriteSet=None, old_outco
         # print "len spriteDistribution: {}, objects: {}".format(len(game.spriteDistribution.keys()), len(objects.keys()))
         # print "len filtered keys: {}".format(len([s for s in game.spriteDistribution.keys() if s not in kill_list_keys]))
 
-        for sprite in [s for s in game.spriteDistribution.keys() if s in objects.keys()]:                  # Keys are the IDs of the game objects
+        for sprite in [s for s in list(game.spriteDistribution.keys()) if s in list(objects.keys())]:                  # Keys are the IDs of the game objects
             sprite_count +=1
             sprite_obj = objects[sprite]["sprite"]
 
             if sprite_obj.name !='avatar':
                 # print "Updating {} because it moved. Lastrect:{}, rect: {}".format(sprite_obj.colorName, sprite_obj.lastrect, sprite_obj.rect)
-                for param_combination in game.spriteDistribution[sprite].keys(): # Check each potential sprite type
+                for param_combination in list(game.spriteDistribution[sprite].keys()): # Check each potential sprite type
                     if game.spriteDistribution[sprite][param_combination]> 0:    # Make sure sprite_type is an option for sprite, and sprite is not killed
                         param_count +=1
                         # sprite_obj = objects[sprite]["sprite"]
@@ -2810,7 +2810,7 @@ def spriteInduction(game, step, bestSpriteTypeDict, oldSpriteSet=None, old_outco
         objects = game.getObjects()
         # notUpdated = [s for s in objects.keys() if objects[s]['sprite'].colorName not in ['DARKGRAY', 'MPUYEI', 'NUPHKK', 'SCJPNE'] and s not in game.spriteDistribution.keys()]
         # t1 = time.time()
-        for sprite in [s for s in game.spriteDistribution.keys() if s in objects.keys() and s not in [k.ID for k in game.kill_list]]:        # Keys are the IDs of the game objects
+        for sprite in [s for s in list(game.spriteDistribution.keys()) if s in list(objects.keys()) and s not in [k.ID for k in game.kill_list]]:        # Keys are the IDs of the game objects
             sprite_obj = objects[sprite]["sprite"]
             # sprite_count +=1
 
@@ -2834,7 +2834,7 @@ def spriteInduction(game, step, bestSpriteTypeDict, oldSpriteSet=None, old_outco
                 #     embed()
         # print "step 3 updated {} sprites and {} param combinations, took {} seconds.".format(sprite_count, calls_to_update_distribution, t1-time.time())
         ## Update the global memory
-        for k in game.spriteDistribution.keys():
+        for k in list(game.spriteDistribution.keys()):
             try:
                 color = game.all_objects[k]['type']['color']
             except KeyError:
@@ -2865,13 +2865,13 @@ def selectObjectGoal(rle, unknown_colors, all_colors, exclude_colors, method):
     safe_colors = [c for c in all_colors if c not in exclude_colors]
     if method=='random_then_nearest':
         if len(unknown_colors)>0 and random.random()>epsilon:
-            print "selecting an unknown color"
+            print("selecting an unknown color")
             object_color = random.choice(unknown_colors)
         else:
             # in case we've interacted with everything once but want to randomly try things again
-            print "sometimes with probability", epsilon, "we select randomly from all safe colors. This just happened."
+            print("sometimes with probability", epsilon, "we select randomly from all safe colors. This just happened.")
             object_color = random.choice(safe_colors)
-        choices = [item for sublist in rle._game.sprite_groups.values() for item in sublist if colorDict[str(item.color)]==object_color]
+        choices = [item for sublist in list(rle._game.sprite_groups.values()) for item in sublist if colorDict[str(item.color)]==object_color]
         avatar_loc = rle._rect2pos(rle._game.sprite_groups['avatar'][0].rect)
         choices = [(dist(rle._rect2pos(c.rect), avatar_loc), c) for c in choices]
         choices = sorted(choices, key=lambda c:c[0])

@@ -1,12 +1,12 @@
-from util import *
-from core import colorDict, VGDLParser, makeVideo, sys
-from ontology import Immovable, Passive, Resource, ResourcePack, RandomNPC, Chaser, AStarChaser, OrientedSprite, Missile
-from ontology import initializeDistribution, updateDistribution, updateOptions, sampleFromDistribution, spriteInduction, selectObjectGoal
-from theory_template import TimeStep, Precondition, InteractionRule, TerminationRule, TimeoutRule, SpriteCounterRule, \
+from .util import *
+from .core import colorDict, VGDLParser, makeVideo, sys
+from .ontology import Immovable, Passive, Resource, ResourcePack, RandomNPC, Chaser, AStarChaser, OrientedSprite, Missile
+from .ontology import initializeDistribution, updateDistribution, updateOptions, sampleFromDistribution, spriteInduction, selectObjectGoal
+from .theory_template import TimeStep, Precondition, InteractionRule, TerminationRule, TimeoutRule, SpriteCounterRule, \
 MultiSpriteCounterRule, ruleCluster, Theory, Game, writeTheoryToTxt, generateSymbolDict
 # from metaplanner import *
 import importlib
-from rlenvironmentnonstatic import createRLInputGame
+from .rlenvironmentnonstatic import createRLInputGame
 
 
 ## For now, only implementing version of agent that can deal with single goals.
@@ -77,7 +77,7 @@ class Agent:
 		try:
 			return self.getSpriteColor(rle._game.sprite_groups[spriteName][0])
 		except:
-			print "getSpriteNameColor failed"
+			print("getSpriteNameColor failed")
 			embed()
 
 	def objectSelectionPhase(self, unknownColors, allColors, rle):
@@ -86,25 +86,25 @@ class Agent:
 		epsilon = .1
 		## With probability 1-epsilon, select known goal if it's known, otherwise unkown object.
 		if len(self.goalColor)>0 and \
-		len([k for k in rle._game.sprite_groups.keys() if len(rle._game.sprite_groups[k])>0 and \
+		len([k for k in list(rle._game.sprite_groups.keys()) if len(rle._game.sprite_groups[k])>0 and \
 			self.getSpriteNameColor(k, rle) in self.goalColor])>0 and \
 			random.random()>epsilon:
-			key = random.choice([k for k in rle._game.sprite_groups.keys() if len(rle._game.sprite_groups[k])>0\
+			key = random.choice([k for k in list(rle._game.sprite_groups.keys()) if len(rle._game.sprite_groups[k])>0\
 			 and self.getSpriteNameColor(k, rle) in self.goalColor])
 			objectGoal = rle._game.sprite_groups[key][0]
 			# actualGoal = objectGoal
 			# objectGoalLocation = rle._rect2posFlipCoords(objectGoal.rect)
-			print "Selecting from known goals", list(set(self.goalColor))
-			print ""
+			print("Selecting from known goals", list(set(self.goalColor)))
+			print("")
 		else:
 			try:
 				objectGoal = selectObjectGoal(rle, unknownColors, allColors, self.killerObjects, method="random_then_nearest")
-				print ""
+				print("")
 			except:
-				print "no unknown objects and no goal? Embedding so you can debug."
+				print("no unknown objects and no goal? Embedding so you can debug.")
 				embed()
 		objectGoalLocation = rle._rect2posFlipCoords(objectGoal.rect)
-		print "object goal is", self.getSpriteColor(objectGoal), "at location", objectGoalLocation
+		print("object goal is", self.getSpriteColor(objectGoal), "at location", objectGoalLocation)
 		return objectGoal, objectGoalLocation
 
 	def initializeVrle(self, hypothesis, objectGoalLocation, rle):
@@ -112,7 +112,7 @@ class Agent:
 		gameString, levelString, symbolDict, immovables, killerObjects = writeTheoryToTxt(rle, hypothesis, self.symbolDict,\
 				 "./examples/gridphysics/theorytest.py", objectGoalLocation)
 
-		print "Initializing mental theory *with* object goal"
+		print("Initializing mental theory *with* object goal")
 		Vrle = createMindEnv(gameString, levelString, output=True)
 		Vrle.immovables, Vrle.killerObjects = immovables, killerObjects
 		return Vrle
@@ -120,7 +120,7 @@ class Agent:
 	def VrleInitPhase(self, objectGoalLocation, rle):
 		## Initialize multiple VRLEs, each corresponding to one hypothesis in self.hypotheses
 		VRLEs = []
-		print "in VrleInitPhase.", len(self.hypotheses), "hypotheses"
+		print("in VrleInitPhase.", len(self.hypotheses), "hypotheses")
 		for hypothesis in self.hypotheses:
 			VRLEs.append(self.initializeVrle(hypothesis, objectGoalLocation, rle))
 		return VRLEs
@@ -132,17 +132,17 @@ class Agent:
 
 		gameObject = None
 		for i in range(numEpisodes):
-			print "Starting episode", i
+			print("Starting episode", i)
 			self.pickNewLevel(index=i)
 			gameObject, won, eventList, statesEncountered = self.playEpisode(gameObject, finalEventList)
 			finalEventList.extend(eventList)
 			VGDLParser.playGame(self.gameString, self.levelString, statesEncountered, persist_movie=True, make_images=True, make_movie=False, movie_dir="videos/"+self.gameName, padding=10)
 			totalStatesEncountered.append(statesEncountered)
 			tally.append(won)
-			print "Episode ended. Won:", won
-			print "Have won", sum(tally), "out of", len(tally), "episodes"
+			print("Episode ended. Won:", won)
+			print("Have won", sum(tally), "out of", len(tally), "episodes")
 		
-		print "Won", sum(tally), "out of ", len(tally), "episodes."
+		print("Won", sum(tally), "out of ", len(tally), "episodes.")
 		makeVideo(movie_dir="videos/"+self.gameName)
 		# empty image directory
 		# shutil.rmtree("images/tmp")
@@ -164,12 +164,12 @@ class Agent:
 		# embed()
 		# allColors = [colorDict[str(rle._game.sprite_groups[k][0].color)] for k in rle._game.sprite_groups.keys()]
 		##select only non-moving objects as goals. Avoids chasing, which takes forever at the moment.
-		allColors = [colorDict[str(rle._game.sprite_groups[k][0].color)] for k in rle._game.sprite_groups.keys() if len(rle._game.getSprites(k))>0 and rle._game.sprite_groups[k][0].speed is None ]
+		allColors = [colorDict[str(rle._game.sprite_groups[k][0].color)] for k in list(rle._game.sprite_groups.keys()) if len(rle._game.getSprites(k))>0 and rle._game.sprite_groups[k][0].speed is None ]
 		allColors = [c for c in allColors if c!='DARKBLUE']
 		unknownColors = [c for c in allColors if c not in self.knownColors]
 
-		print "unknown colors:", unknownColors
-		print "Known colors:", self.knownColors
+		print("unknown colors:", unknownColors)
+		print("Known colors:", self.knownColors)
 
 		ended, won = rle._isDone()
 		## Start storing encountered states.
@@ -179,10 +179,10 @@ class Agent:
 		## initialize theory if necessary.
 		if len(self.hypotheses) == 0:
 			gameObject = self.initializeHypotheses(rle, allObjects, learnSprites=True)
-			print "initializing hypotheses"
+			print("initializing hypotheses")
 		else:
 			gameObject = self.completeHypotheses(rle, allObjects)
-			print "had hypotheses -- completing them."
+			print("had hypotheses -- completing them.")
 
 		while not ended:
 
@@ -197,7 +197,7 @@ class Agent:
 				## VRLEs, hypothesis-selection-method .....
 				## figures out plan determined as above
 				## carries out plan.
-			print "calling getToObjecGoal"
+			print("calling getToObjecGoal")
 			rle, self.hypotheses, finalEventList, candidateNewColors, statesEncountered, gameObject = \
 				getToObjectGoal(rle, VRLEs[0], self.plannerType, gameObject, self.hypotheses[0], self.gameString, self.levelString, \
 					objectGoal, allObjects, finalEventList, symbolDict=self.symbolDict)
@@ -216,10 +216,10 @@ class Agent:
 			for col in candidateNewColors:
 				if col not in self.knownColors:
 					self.knownColors.append(col)
-					print "added", col, "to knownColors"
-			print "updated known colors", self.knownColors
+					print("added", col, "to knownColors")
+			print("updated known colors", self.knownColors)
 			unknownColors = [c for c in unknownColors if c not in self.knownColors]
-			print "updated unknownColors", unknownColors
+			print("updated unknownColors", unknownColors)
 		return gameObject, won, finalEventList, totalStatesEncountered
 
 if __name__ == "__main__":
@@ -256,10 +256,10 @@ if __name__ == "__main__":
 	plannerType = "IW"
 	# plannerType = "QLearning"
 	# plannerType = "AStar"
-	print ""
-	print "Playing {} with {}".format(filename, plannerType)
+	print("")
+	print("Playing {} with {}".format(filename, plannerType))
 	agent = Agent(filename, plannerType)
 	t1 = time.time()
 	numEpisodes = 5
 	agent.playMultipleEpisodes(numEpisodes)
-	print "Ended {} episodes of {} with planner {} in {} seconds".format(numEpisodes, filename, plannerType, time.time()-t1)
+	print("Ended {} episodes of {} with planner {} in {} seconds".format(numEpisodes, filename, plannerType, time.time()-t1))

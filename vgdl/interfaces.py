@@ -13,9 +13,9 @@ import pygame
 from pybrain.rl.environments.environment import Environment
 from pybrain.rl.environments.episodic import EpisodicTask
 
-from ontology import BASEDIRS
-from core import VGDLSprite
-from stateobs import StateObsHandler 
+from .ontology import BASEDIRS
+from .core import VGDLSprite
+from .stateobs import StateObsHandler 
 
         
     
@@ -136,7 +136,7 @@ class GameEnvironment(Environment, StateObsHandler):
         if init_state is not None:
             self.setState(init_state)
         for a in action_sequence:
-            print a, self.getState()
+            print(a, self.getState())
             if self._isDone()[0]:
                 break
             self.performAction(a)
@@ -181,7 +181,7 @@ class GameTask(EpisodicTask):
 
 def testRollout(actions=[0, 0, 2, 2, 0, 3] * 20):        
     from examples.gridphysics.mazes import polarmaze_game, maze_level_1
-    from core import VGDLParser
+    from .core import VGDLParser
     game_str, map_str = polarmaze_game, maze_level_1
     g = VGDLParser().parseGame(game_str)
     g.buildLevel(map_str)    
@@ -191,8 +191,8 @@ def testRollout(actions=[0, 0, 2, 2, 0, 3] * 20):
     
 def testRolloutVideo(actions=[0, 0, 2, 2, 0, 3] * 2):        
     from examples.gridphysics.mazes import polarmaze_game, maze_level_1
-    from core import VGDLParser
-    from tools import makeGifVideo
+    from .core import VGDLParser
+    from .tools import makeGifVideo
     game_str, map_str = polarmaze_game, maze_level_1
     g = VGDLParser().parseGame(game_str)
     g.buildLevel(map_str)
@@ -202,7 +202,7 @@ def testRolloutVideo(actions=[0, 0, 2, 2, 0, 3] * 2):
 def testInteractions():
     from random import randint
     from pybrain.rl.experiments.episodic import EpisodicExperiment
-    from core import VGDLParser
+    from .core import VGDLParser
     from examples.gridphysics.mazes import polarmaze_game, maze_level_1    
     from pybrain.rl.agents.agent import Agent
     
@@ -221,13 +221,13 @@ def testInteractions():
     agent = DummyAgent()
     exper = EpisodicExperiment(task, agent)
     res = exper.doEpisodes(2)
-    print res
+    print(res)
 
 def testPolicyAgent():
     from pybrain.rl.experiments.episodic import EpisodicExperiment
-    from core import VGDLParser
+    from .core import VGDLParser
     from examples.gridphysics.mazes import polarmaze_game, maze_level_2
-    from agents import PolicyDrivenAgent
+    from .agents import PolicyDrivenAgent
     game_str, map_str = polarmaze_game, maze_level_2
     g = VGDLParser().parseGame(game_str)
     g.buildLevel(map_str)
@@ -239,14 +239,14 @@ def testPolicyAgent():
     env.reset()
     exper = EpisodicExperiment(task, agent)
     res = exper.doEpisodes(2)
-    print res
+    print(res)
     
 def testRecordingToGif(human=False):
     from pybrain.rl.experiments.episodic import EpisodicExperiment
-    from core import VGDLParser
+    from .core import VGDLParser
     from examples.gridphysics.mazes import polarmaze_game, maze_level_2
-    from agents import PolicyDrivenAgent, InteractiveAgent    
-    from tools import makeGifVideo
+    from .agents import PolicyDrivenAgent, InteractiveAgent    
+    from .tools import makeGifVideo
     
     game_str, map_str = polarmaze_game, maze_level_2
     g = VGDLParser().parseGame(game_str)
@@ -259,17 +259,17 @@ def testRecordingToGif(human=False):
         agent = PolicyDrivenAgent.buildOptimal(env)
     exper = EpisodicExperiment(task, agent)
     res = exper.doEpisodes(1)
-    print res
+    print(res)
     
     actions = [a for _, a, _ in env._allEvents]
-    print actions
+    print(actions)
     makeGifVideo(env, actions, initstate=env._initstate)
     
 def testAugmented():
-    from core import VGDLParser
+    from .core import VGDLParser
     from pybrain.rl.experiments.episodic import EpisodicExperiment
-    from mdpmap import MDPconverter
-    from agents import PolicyDrivenAgent    
+    from .mdpmap import MDPconverter
+    from .agents import PolicyDrivenAgent    
     
     
     zelda_level2 = """
@@ -290,9 +290,9 @@ wwwwwwwwwwwww
                           recordingEnabled=True, actionDelay=150)
     C = MDPconverter(g, env=env, verbose=True)
     Ts, R, _ = C.convert()
-    print C.states
-    print Ts[0]
-    print R
+    print(C.states)
+    print(Ts[0])
+    print(R)
     env.reset()
     agent = PolicyDrivenAgent.buildOptimal(env)
     env.visualize = True

@@ -1,6 +1,6 @@
 from IPython import embed
-from planner import *
-from core import VGDLParser
+from .planner import *
+from .core import VGDLParser
 import itertools
 
 from pygame.locals import K_SPACE, K_UP, K_DOWN, K_LEFT, K_RIGHT
@@ -12,12 +12,12 @@ actionDict = {K_SPACE: 'space', K_UP: 'up', K_DOWN: 'down', K_LEFT: 'left', K_RI
 class WBP(Planner):
 	def __init__(self, rle, gameString, levelString, gameFilename):
 		Planner.__init__(self, rle, gameString, levelString, gameFilename, display=1)
-		self.T = len(rle._obstypes.keys())+1 #number of object types. Adding avatar, which is not in obstypes.
+		self.T = len(list(rle._obstypes.keys()))+1 #number of object types. Adding avatar, which is not in obstypes.
 		self.vecDim = [rle.outdim[0]*rle.outdim[1], 2, self.T]
 		self.trueAtoms = defaultdict(lambda:0) #set() ## set of atoms that have been true at some point thus far in the planner.
-		self.objectTypes = rle._game.sprite_groups.keys()
+		self.objectTypes = list(rle._game.sprite_groups.keys())
 		self.objectTypes.sort()
-		self.phiSize = sum([len(rle._game.sprite_groups[k]) for k in rle._game.sprite_groups.keys() if k not in ['wall', 'avatar']])
+		self.phiSize = sum([len(rle._game.sprite_groups[k]) for k in list(rle._game.sprite_groups.keys()) if k not in ['wall', 'avatar']])
 		self.objIDs = {}
 		self.maxNumObjects = 6
 		self.trackTokens = False
@@ -26,7 +26,7 @@ class WBP(Planner):
 		self.padding = 5  ##5 is arbitrary; just to make sure we don't get overlap when we add positions
 		self.theory = generateTheoryFromGame(rle, alterGoal=False)
 		i=1
-		for k in rle._game.all_objects.keys():
+		for k in list(rle._game.all_objects.keys()):
 			self.objIDs[k] = i * (rle.outdim[0]*rle.outdim[1]+self.padding)
 			i+=1
 		self.addSpaceBarToActions()
@@ -36,7 +36,7 @@ class WBP(Planner):
 		## Note: if an object that isn't instantiated in the beginning is of a class that
 		## spacebar applies to, we won't pick up on it here.
 		shootingClasses = ['MarioAvatar', 'ClimbingAvatar', 'ShootAvatar', 'Switch', 'FlakAvatar']
-		classes = [str(o[0].__class__) for o in self.rle._game.sprite_groups.values() if len(o)>0]
+		classes = [str(o[0].__class__) for o in list(self.rle._game.sprite_groups.values()) if len(o)>0]
 		spacebarAvailable = False
 		for sc in shootingClasses:
 			if any([sc in c for c in classes]):
@@ -52,7 +52,7 @@ class WBP(Planner):
 
 	def calculateAtoms(self, rle):
 		lst = []
-		for k in rle._game.sprite_groups.keys():
+		for k in list(rle._game.sprite_groups.keys()):
 			for o in rle._game.sprite_groups[k]:
 				if o not in rle._game.kill_list:
 					## turn location into vector posd2[ition (rows appended one after the other.)
@@ -74,12 +74,12 @@ class WBP(Planner):
 		lst.append(ind)
 		if not self.vecSize:
 			self.vecSize = len(lst)
-			print "Vector is length {}".format(self.vecSize)
+			print("Vector is length {}".format(self.vecSize))
 		return set(lst)
 
 	def compareDicts(self, d1,d2):
 		## only tells us what is in d2 that isn't in d1, as well as differences in values between shared keys
-		return [k for k in d2.keys() if (k not in d1.keys() or d1[k]!=d2[k])]
+		return [k for k in list(d2.keys()) if (k not in list(d1.keys()) or d1[k]!=d2[k])]
 
 	def delta(self, node1, node2):
 		if node1 is None:
@@ -100,7 +100,7 @@ def noveltySelection(QNovelty, QReward):
 
 def rewardSelection(QReward, QNovelty):
 	# acceptableNodes = QReward
-	acceptableNodes = filter(lambda n:n.novelty<3, QReward)
+	acceptableNodes = [n for n in QReward if n.novelty<3]
 	# if len(acceptableNodes)==0:
 		# acceptableNodes = QReward
 		# print "Removed filter"
@@ -137,13 +137,13 @@ def BFS3(rle, WBP):
 		# Add node state to states encountered
 		WBP.statesEncountered.append(current.lastState._game.getFullState())
 
-		print current.novelty, current.intrinsic_reward, current.heuristicVal
+		print(current.novelty, current.intrinsic_reward, current.heuristicVal)
 		# print len(QNovelty), len(QReward)
 		# if current==None:
 		# 	pass
 		# else:
 		# print current.novelty
-		print current.lastState.show()
+		print(current.lastState.show())
 
 		current.updateNoveltyDict(QNovelty, QReward)
 		# embed()
@@ -216,9 +216,9 @@ class Node():
 			# print vrle.show()
 			terminal, win = vrle._isDone()
 			i+=1
-		print "______"
+		print("______")
 		if terminal and not win:
-			print "recursive call to rollout."
+			print("recursive call to rollout.")
 			return []
 			# return self.rollout(vrle2)
 		# else:
@@ -350,11 +350,11 @@ class Node():
 					self.metabolic_cost = self.parent.metabolic_cost + self.metabolics(vrle, res['effectList'], a)
 					terminal, win = vrle._isDone()
 			except:
-				print "conditions met but copy failed"
+				print("conditions met but copy failed")
 				embed()
 		else:
 			self.reconstructed=True
-			print "copy failed; replaying from top"
+			print("copy failed; replaying from top")
 			vrle = copy.deepcopy(rle)
 			terminal, win = vrle._isDone()
 			i=0
@@ -416,12 +416,12 @@ class Node():
 		i = 0
 		for objType in vrle._game.sprite_groups:
 			for s in vrle._game.sprite_groups[objType]:
-				if s.ID not in self.WBP.objIDs.keys():
+				if s.ID not in list(self.WBP.objIDs.keys()):
 					if s.name=='bullet':
 						s.ID = len([o for o in vrle._game.sprite_groups[objType] if o not in vrle._game.kill_list])
 					else:
 						s.ID = len(vrle._game.sprite_groups[objType])
-					self.WBP.objIDs[s.ID] = (len(self.WBP.objIDs.keys())+1) * (self.rle.outdim[0]*self.rle.outdim[1]+self.WBP.padding)
+					self.WBP.objIDs[s.ID] = (len(list(self.WBP.objIDs.keys()))+1) * (self.rle.outdim[0]*self.rle.outdim[1]+self.WBP.padding)
 					i+=1
 		return
 
@@ -435,13 +435,13 @@ class Node():
 		vrle = copy.deepcopy(self.rle)
 		terminal = vrle._isDone()[0]
 		i=0
-		print vrle.show()
+		print(vrle.show())
 		while not terminal:
 			a = self.actionSeq[i]
-			print actionDict[a]
+			print(actionDict[a])
 			vrle.step(a)
 			# vrle.step(0)
-			print vrle.show()
+			print(vrle.show())
 			# embed()
 			terminal = vrle._isDone()[0]
 			i+=1
@@ -520,8 +520,8 @@ if __name__ == "__main__":
 	t1 = time.time()
 	last, visited, rejected = BFS3(rle, p)
 
-	print time.time()-t1
-	print len(visited), len(rejected)
+	print(time.time()-t1)
+	print(len(visited), len(rejected))
 	embed()
 
 

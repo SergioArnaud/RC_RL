@@ -1,8 +1,8 @@
-from ontology import distributionInitSetup
-from WBP import *
-from mcts import *
-from qlearner import *
-from aStar import *
+from .ontology import distributionInitSetup
+from .WBP import *
+from .mcts import *
+from .qlearner import *
+from .aStar import *
 import time
 from termcolor import colored
 
@@ -16,14 +16,14 @@ def translateEvents(events, all_objects, rle):
 			return None
 		elif objectID == 'EOS':
 			return 'ENDOFSCREEN'
-		elif objectID in all_objects.keys():
+		elif objectID in list(all_objects.keys()):
 			return all_objects[objectID]['type']['color']
-		elif objectID in rle._game.getObjects().keys():
+		elif objectID in list(rle._game.getObjects().keys()):
 			return rle._game.getObjects()[objectID]['type']['color']
-		elif objectID in [colorDict[k] for k in colorDict.keys()]:
+		elif objectID in [colorDict[k] for k in list(colorDict.keys())]:
 			# If we were passed a color to begin with (i.e., in the case of EOS)
 			return objectID
-		elif objectID in rle._game.sprite_groups.keys():
+		elif objectID in list(rle._game.sprite_groups.keys()):
 			return colorDict[str(rle._game.sprite_groups[objectID][0].color)]
 		elif objectID in [obj.ID for obj in rle._game.kill_list]:
 			objectColor = [obj.color for obj in rle._game.kill_list
@@ -32,7 +32,7 @@ def translateEvents(events, all_objects, rle):
 		else:
 			# for some reason we haven't been passed an ID but rather a sprite object
 			objectName = objectID.name
-			color = [all_objects[k]['type']['color'] for k in all_objects.keys() if all_objects[k]['sprite'].name==objectName][0]
+			color = [all_objects[k]['type']['color'] for k in list(all_objects.keys()) if all_objects[k]['sprite'].name==objectName][0]
 			return color
 
 	outlist = []
@@ -44,7 +44,7 @@ def translateEvents(events, all_objects, rle):
 			# print 'in translateEvents', event
 			if len(event) > 3:
 				tmp = [event[0], getObjectColor(event[1]), getObjectColor(event[2])]
-				for k in event[3].keys():
+				for k in list(event[3].keys()):
 					if k=='stype':
 						event[3][k] = getObjectColor(event[3][k])
 				tmp.extend(event[3:])
@@ -54,7 +54,7 @@ def translateEvents(events, all_objects, rle):
 			elif len(event)==2:
 				outlist.append((event[0], getObjectColor(event[1])))
 		except:
-			print "translateEvents failed"
+			print("translateEvents failed")
 			embed()
 
 	#Make sure events in timestep are unique (don't want to double-count things)
@@ -63,13 +63,13 @@ def translateEvents(events, all_objects, rle):
 		if o not in uniqueEventList:
 			uniqueEventList.append(o)
 	if len(uniqueEventList)>0:
-		print uniqueEventList
+		print(uniqueEventList)
 	return uniqueEventList
 
 
 def observe(rle, obsSteps, bestSpriteTypeDict, display=False):
 	if display:
-		print "observing for {} steps".format(obsSteps)
+		print("observing for {} steps".format(obsSteps))
 	if obsSteps>0:
 		for i in range(obsSteps):
 			# print rle.show()
@@ -81,11 +81,11 @@ def observe(rle, obsSteps, bestSpriteTypeDict, display=False):
 			# print "step 2 took {} seconds".format(time.time()-t1)
 			rle.step((0,0))
 			if display:
-				print "score: {}, game tick: {}".format(rle._game.score, rle._game.time)
-				print rle.show(color='blue')
+				print("score: {}, game tick: {}".format(rle._game.score, rle._game.time))
+				print(rle.show(color='blue'))
 
 			rle._game.nextPositions = {}
-			for k, v in rle._game.all_objects.iteritems():
+			for k, v in rle._game.all_objects.items():
 				rle._game.nextPositions[k] = (int(rle._game.all_objects[k]['sprite'].rect.x), int(rle._game.all_objects[k]['sprite'].rect.y))
 				try:
 					if rle._game.previousPositions[k] != rle._game.nextPositions[k]:
@@ -113,7 +113,7 @@ def planActLoop(rleCreateFunc, filename, max_actions_per_plan, planning_steps, d
 	rle = rleCreateFunc(OBSERVATION_GLOBAL)
 	game, level = defInputGame(filename)
 	outdim = rle.outdim
-	print rle.show()
+	print(rle.show())
 
 	terminal = rle._isDone()[0]
 
@@ -134,11 +134,11 @@ def planActLoop(rleCreateFunc, filename, max_actions_per_plan, planning_steps, d
 
 		for j in range(min(len(actions), max_actions_per_plan)):
 			if actions[j] is not None and not terminal:
-				print ACTIONS[actions[j]]
+				print(ACTIONS[actions[j]])
 				res = rle.step(actions[j])
 				new_state = res["observation"]
 				terminal = not res['pcontinue']
-				print rle.show()
+				print(rle.show())
 				finalStates.append(rle._game.getFullState())
 
 		i+=1
@@ -155,7 +155,7 @@ def planUntilSolved(rleCreateFunc, filename, defaultPolicyMaxSteps, partitionWei
 	game, level = defInputGame(filename)
 	outdim = rle.outdim
 	symbolDict = generateSymbolDict(rle)
-	print rle.show()
+	print(rle.show())
 
 	goal_loc = np.where(np.reshape(rle._getSensors(), rle.outdim)==8)
 	goal_loc = goal_loc[0][0], goal_loc[1][0]
@@ -175,7 +175,7 @@ def planUntilSolved(rleCreateFunc, filename, defaultPolicyMaxSteps, partitionWei
 
 	mcts = Basic_MCTS(existing_rle=rle, game=game, level=level, partitionWeights=[5,2,3])
 	subgoals = mcts.getSubgoals(subgoal_path_threshold=3)
-	print "subgoals", subgoals
+	print("subgoals", subgoals)
 
 
 	total_steps = 0
@@ -184,16 +184,16 @@ def planUntilSolved(rleCreateFunc, filename, defaultPolicyMaxSteps, partitionWei
 	for subgoal in subgoals:
 		rle, actions = getToWaypoint(rle, subgoal, symbolDict, defaultPolicyMaxSteps, partitionWeights=[10,2,4])
 		numActions += len(actions)
-		print steps, "steps"
+		print(steps, "steps")
 		# total_steps += steps
 		if total_steps > maxEpisodes:
 			solved = False
 			break
 
 	if solved:
-		print "Found and executed plan using", total_steps, "epiosodes of MCTS."
+		print("Found and executed plan using", total_steps, "epiosodes of MCTS.")
 	else:
-		print "didn't solve game even using %i episodes of MCTS"%total_steps
+		print("didn't solve game even using %i episodes of MCTS"%total_steps)
 
 	return mcts, total_steps, solved, numActions
 
@@ -247,7 +247,7 @@ def getToWaypoint(rle, subgoal, plannerType, symbolDict, defaultPolicyMaxSteps, 
 
 	theory = generateTheoryFromGame(rle)
 
-	print "in getToWayPoint"
+	print("in getToWayPoint")
 	# embed()
 	# print "making RLE in getToWaypoint, after generateTheoryFromGame()"
 	theoryString, levelString, inverseMapping, immovables, killerObjects =\
@@ -255,9 +255,9 @@ def getToWaypoint(rle, subgoal, plannerType, symbolDict, defaultPolicyMaxSteps, 
 	Vrle = createMindEnv(theoryString, levelString, output=False)
 	Vrle.immovables, Vrle.killerObjects = immovables, killerObjects
 
-	print "mental map with subgoal", subgoal
-	print Vrle.show()
-	print "planner type", plannerType
+	print("mental map with subgoal", subgoal)
+	print(Vrle.show())
+	print("planner type", plannerType)
 	if plannerType=='IW':
 		planner = IW(rle=Vrle, gameString=theoryString, levelString=levelString, gameFilename=Vrle.game_name, k=2)
 		planner.BFS(Vrle)
@@ -275,11 +275,11 @@ def getToWaypoint(rle, subgoal, plannerType, symbolDict, defaultPolicyMaxSteps, 
 	elif plannerType=='AStar':
 		planner = AStar(Vrle, gameString=theoryString, levelString=levelString)
 		path, actions = planner.search()
-	print "Found plan to subgoal. Actions", actions
+	print("Found plan to subgoal. Actions", actions)
 	if act:
 		for a in actions:
 			rle.step(a)
-			print rle.show()
+			print(rle.show())
 	return rle, actions
 
 def objectGoalReached(effects, object_goal):
@@ -287,7 +287,7 @@ def objectGoalReached(effects, object_goal):
 	goal_achieved = False
 	for e in effects:
 		if 'DARKBLUE' in e and colorDict[str(object_goal.color)] in e:
-			print "goal achieved"
+			print("goal achieved")
 			goal_achieved = True
 			break
 	return goal_achieved
@@ -346,8 +346,8 @@ def getToObjectGoal(rle, vrle, plannerType, game_object, hypothesis, game, level
 
 	## Add newly-seen objects.
 	current_objects = rle._game.getObjects()
-	for k in current_objects.keys():
-		if k not in all_objects.keys():
+	for k in list(current_objects.keys()):
+		if k not in list(all_objects.keys()):
 			all_objects[k] = current_objects[k]
 
 	states_encountered = [rle._game.getFullState()]
@@ -373,7 +373,7 @@ def getToObjectGoal(rle, vrle, plannerType, game_object, hypothesis, game, level
 			elif plannerType=='AStar':
 				planner = AStar(vrle, gameString=game, levelString=level)
 				subgoals = planner.getSubgoals(subgoal_path_threshold=100) ##This finds subgoals by searching the entire space, so do this only once and then use the path.
-			print "subgoals", subgoals
+			print("subgoals", subgoals)
 
 			## if you can't find subgoals that get you to the goal, exit
 			if len(subgoals)==0:
@@ -385,7 +385,7 @@ def getToObjectGoal(rle, vrle, plannerType, game_object, hypothesis, game, level
 				if not theory_change_flag and not goal_achieved and not resetSubgoals:
 
 					## write subgoal to theory; initialize VRLE.
-					print "at top of metaplanner loop -- making theory"
+					print("at top of metaplanner loop -- making theory")
 					game, level, symbolDict, immovables, killerObjects = writeTheoryToTxt(rle, hypotheses[0], symbolDict, \
 						"./examples/gridphysics/theorytest.py", subgoal)
 					vrle = createMindEnv(game, level, output=False)
@@ -414,18 +414,18 @@ def getToObjectGoal(rle, vrle, plannerType, game_object, hypothesis, game, level
 							except Exception as e:	# TODO: how to process changes in resources that led to termination state?
 								# agentState = defaultdict(lambda: 0)
 								agentState = rle.agentStatePrev
-								print "didn't find agentState resources"
+								print("didn't find agentState resources")
 								embed()
 
 
-							print "agentState", agentState
+							print("agentState", agentState)
 							res = rle.step(noise(action))
 
 
 							## Add newly-seen objects.
 							current_objects = rle._game.getObjects()
-							for k in current_objects.keys():
-								if k not in all_objects.keys():
+							for k in list(current_objects.keys()):
+								if k not in list(all_objects.keys()):
 									all_objects[k] = current_objects[k]
 									distributionInitSetup(rle._game, k)
 									rle._game.ignoreList.append(k) ## this is a hack -- the point is to prevent spriteInduction from
@@ -446,14 +446,14 @@ def getToObjectGoal(rle, vrle, plannerType, game_object, hypothesis, game, level
 							# 	embed()
 							effects = translateEvents(res['effectList'], all_objects, rle)
 
-							k = random.choice(rle._game.spriteDistribution.keys())
+							k = random.choice(list(rle._game.spriteDistribution.keys()))
 
 							spriteInduction(rle._game, step=3)
 
 							if symbolDict:
-								print rle.show()
+								print(rle.show())
 							else:
-								print np.reshape(new_state, rle.outdim)
+								print(np.reshape(new_state, rle.outdim))
 
 							## If there were collisions, update history and perform interactionSet induction if the collisions were novel.
 							if effects:
@@ -479,7 +479,7 @@ def getToObjectGoal(rle, vrle, plannerType, game_object, hypothesis, game, level
 								all_effects = [item for sublist in [e['effectList'] for e in finalEventList] for item in sublist]
 								if not all([e in all_effects for e in effects]):## TODO: make sure you write this so that it works with simultaneous effects.
 
-									print "new effects", [e for e in effects if not e in all_effects]
+									print("new effects", [e for e in effects if not e in all_effects])
 
 									finalEventList.append(event)
 									terminationCondition = {'ended': False, 'win':False, 'time':rle._game.time}
@@ -494,13 +494,13 @@ def getToObjectGoal(rle, vrle, plannerType, game_object, hypothesis, game, level
 									# hypotheses[0].display()
 									# embed()
 									if len(hypotheses)>1:
-										print "more than one hypothesis"
+										print("more than one hypothesis")
 										embed()
 
 									candidate_new_colors = updateCandidateColors(hypotheses, finalEventList)
 
 
-									print "updating internal theory"
+									print("updating internal theory")
 									# print "avatarLoc", planner.findAvatarInRLE(rle)
 									## update to incorporate what we've learned, keep the same subgoal for now; this will update at the top of the next loop.
 									game, level, symbolDict, immovables, killerObjects = writeTheoryToTxt(rle, hypotheses[0], symbolDict, \
@@ -518,7 +518,7 @@ def getToObjectGoal(rle, vrle, plannerType, game_object, hypothesis, game, level
 									# hypotheses[0].display()
 									# print ""
 								else:
-									print "no new effects", effects
+									print("no new effects", effects)
 									finalEventList.append(event)
 									terminationCondition = {'ended': False, 'win':False, 'time':rle._game.time}
 									trace = ([TimeStep(e['agentAction'], e['agentState'], e['effectList'], e['gameState']) for e in finalEventList], terminationCondition)
@@ -529,7 +529,7 @@ def getToObjectGoal(rle, vrle, plannerType, game_object, hypothesis, game, level
 							if terminal:
 								return rle, hypotheses, finalEventList, candidate_new_colors, states_encountered, game_object
 
-					print "executed all actions."
+					print("executed all actions.")
 					## If you finish all actions, vrle needs to reflect most recent state.
 					## goalLoc will be overwritten once you find new subgoals at the top.
 					game, level, symbolDict, immovables, killerObjects = writeTheoryToTxt(rle, hypotheses[0], symbolDict, \

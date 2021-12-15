@@ -10,6 +10,7 @@ import cloudpickle
 import cv2
 import time
 import os
+from scipy import misc
 
 
 class DopamineVGDLEnv(object):
@@ -65,7 +66,7 @@ class DopamineVGDLEnv(object):
                 "{}/{}_reward_history_{}.csv".format(
                     self.experiment_outpath, self.game_name_short, self.level_switch
                 ),
-                "ab",
+                "w",
             ) as file:
                 writer = csv.writer(file)
                 writer.writerow(
@@ -76,7 +77,7 @@ class DopamineVGDLEnv(object):
                 "{}/{}_object_interaction_history_{}.csv".format(
                     self.experiment_outpath, self.game_name_short, self.level_switch
                 ),
-                "wb",
+                "a",
             ) as file:
                 interactionfilewriter = csv.writer(file)
                 interactionfilewriter.writerow(
@@ -98,6 +99,7 @@ class DopamineVGDLEnv(object):
         self.Env.set_level(self.Env.lvl)
         self.steps = intended_steps
 
+
     def get_level(self):
         return self.Env.lvl
 
@@ -107,6 +109,10 @@ class DopamineVGDLEnv(object):
         self.steps += 1
         self.episode_steps += 1
         self.append_gif()
+        if self.steps % 1000 == 0:
+            #self.save_gif()
+            self.screen_history = []
+
         self.reward, self.game_over, self.win = self.Env.step(action)
         if len(self.Env.current_env._game.sprite_groups["avatar"]) > 0:
             self.avatar_position_data["episodes"][-1].append(
@@ -162,7 +168,7 @@ class DopamineVGDLEnv(object):
                     "{}/{}_object_interaction_history_{}.csv".format(
                         self.experiment_outpath, self.game_name_short, self.level_switch
                     ),
-                    "ab",
+                    "a",
                 ) as file:
                     interactionfilewriter = csv.writer(file)
                     for event_name, count in self.event_dict.items():
@@ -223,11 +229,11 @@ class DopamineVGDLEnv(object):
                     "{}/{}_reward_history_{}.csv".format(
                         self.experiment_outpath, self.game_name_short, self.level_switch
                     ),
-                    "ab",
+                    "a",
                 ) as file:
                     writer = csv.writer(file)
                     writer.writerow(episode_results)
-            self.screen_history = []
+            #self.screen_history = []
         return self.state, self.reward, self.game_over, 0
 
     def reset(self):
@@ -295,7 +301,7 @@ class DopamineVGDLEnv(object):
         )
 
     def append_gif(self):
-        frame = self.Env.render(gif=True)
+        frame = self.Env.render(gif=False)
         self.screen_history.append(frame)
 
     # Auxiliary functions from player.py

@@ -1,12 +1,12 @@
-from mcts_pseudoreward_heuristic import *
-from util import *
-from core import colorDict
-from ontology import Immovable, Passive, Resource, ResourcePack, RandomNPC, Chaser, AStarChaser, OrientedSprite, Missile
-from ontology import initializeDistribution, updateDistribution, updateOptions, sampleFromDistribution, spriteInduction, selectObjectGoal
-from theory_template import TimeStep, Precondition, InteractionRule, TerminationRule, TimeoutRule, SpriteCounterRule, \
+from .mcts_pseudoreward_heuristic import *
+from .util import *
+from .core import colorDict
+from .ontology import Immovable, Passive, Resource, ResourcePack, RandomNPC, Chaser, AStarChaser, OrientedSprite, Missile
+from .ontology import initializeDistribution, updateDistribution, updateOptions, sampleFromDistribution, spriteInduction, selectObjectGoal
+from .theory_template import TimeStep, Precondition, InteractionRule, TerminationRule, TimeoutRule, SpriteCounterRule, \
 MultiSpriteCounterRule, ruleCluster, Theory, Game, writeTheoryToTxt, generateSymbolDict
 import importlib
-from rlenvironmentnonstatic import createRLInputGame
+from .rlenvironmentnonstatic import createRLInputGame
 
 
 # from vgdl.mcts_pseudoreward_heuristic import *
@@ -40,14 +40,14 @@ def playEpisode(rleCreateFunc, hypotheses=[], game_object=None, unknown_colors=F
 
 	noHypotheses = len(hypotheses)==0
 
-	print ""
+	print("")
 	if unknown_colors==False:
-		unknown_objects = [k for k in rle._game.sprite_groups.keys() if k!='avatar']
+		unknown_objects = [k for k in list(rle._game.sprite_groups.keys()) if k!='avatar']
 		unknown_colors = [colorDict[str(rle._game.sprite_groups[k][0].color)] for k in unknown_objects]
-		print "unknown objects:", unknown_colors
+		print("unknown objects:", unknown_colors)
 	else:
-		print "already know some objects. Unknown:"
-		print unknown_colors
+		print("already know some objects. Unknown:")
+		print(unknown_colors)
 
 	ended, won = rle._isDone()
 	
@@ -77,29 +77,29 @@ def playEpisode(rleCreateFunc, hypotheses=[], game_object=None, unknown_colors=F
 			Vrle = createMindEnv(game, level, output=False)
 			Vrle.immovables = immovables
 		if goalColor:																## Select known goal if it's known, otherwise unkown object.
-			key = [k for k in rle._game.sprite_groups.keys() if \
+			key = [k for k in list(rle._game.sprite_groups.keys()) if \
 			colorDict[str(rle._game.sprite_groups[k][0].color)]==goalColor][0]
 			actual_goal = rle._game.sprite_groups[key][0]
 			object_goal = actual_goal
 			object_goal_location = Vrle._rect2pos(object_goal.rect)
 			object_goal_location = object_goal_location[1], object_goal_location[0]
-			print "goal is known:", goalColor
-			print ""
+			print("goal is known:", goalColor)
+			print("")
 		else:
 			try:
 				object_goal = selectObjectGoal(Vrle, unknown_colors, method="random_then_nearest")
 				object_goal_location = Vrle._rect2pos(object_goal.rect)
 				object_goal_location = object_goal_location[1], object_goal_location[0]
-				print "object goal is", colorDict[str(object_goal.color)], "at location", (rle._rect2pos(object_goal.rect)[1], rle._rect2pos(object_goal.rect)[0])
-				print ""
+				print("object goal is", colorDict[str(object_goal.color)], "at location", (rle._rect2pos(object_goal.rect)[1], rle._rect2pos(object_goal.rect)[0]))
+				print("")
 			except:
-				print "no unknown objects and no goal? Embedding so you can debug."
+				print("no unknown objects and no goal? Embedding so you can debug.")
 				embed()
 
 		game, level, symbolDict, immovables = writeTheoryToTxt(rle, hypotheses[0], symbolDict,\
 		 "./examples/gridphysics/theorytest.py", object_goal_location)
 
-		print "Initializing mental theory *with* object goal"
+		print("Initializing mental theory *with* object goal")
 		# print "immovables", immovables
 		Vrle = createMindEnv(game, level, output=True)							## World in agent's head, including object goal
 		Vrle.immovables = immovables
@@ -124,7 +124,7 @@ def playEpisode(rleCreateFunc, hypotheses=[], game_object=None, unknown_colors=F
 			hypotheses[0].goalColor=goalColor
 
 	if playback:			## TODO: Aritro cleans this up.
-		print "in playback"
+		print("in playback")
 		from vgdl.core import VGDLParser
 		from examples.gridphysics.simpleGame4 import level, game
 		playbackGame = game
@@ -162,7 +162,7 @@ if __name__ == "__main__":
 			unknown_colors=unknown_colors, goalColor=goalColor, finalEventList=finalEventList, \
 			playback=True)
 		tally.append(won)
-		print "episode ended. Win:", won
-		print "__________________________________________________"
-	print "Won", sum(tally), "out of ", len(tally), "episodes."
+		print("episode ended. Win:", won)
+		print("__________________________________________________")
+	print("Won", sum(tally), "out of ", len(tally), "episodes.")
 	# embed()

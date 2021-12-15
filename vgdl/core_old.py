@@ -5,10 +5,10 @@ Video game description language -- parser, framework and core game classes.
 '''
 import pygame
 from random import choice
-from tools import Node, indentTreeParser
+from .tools import Node, indentTreeParser
 from collections import defaultdict
-from tools import roundedPoints
-from colors import *
+from .tools import roundedPoints
+from .colors import *
 import os, shutil
 import datetime
 import uuid
@@ -68,9 +68,9 @@ class VGDLParser(object):
     @staticmethod
     def playSubjectiveGame(game_str, map_str):
         from pybrain.rl.experiments.episodic import EpisodicExperiment
-        from interfaces import GameTask
-        from subjective import SubjectiveGame
-        from agents import InteractiveAgent, UserTiredException
+        from .interfaces import GameTask
+        from .subjective import SubjectiveGame
+        from .agents import InteractiveAgent, UserTiredException
         g = VGDLParser().parseGame(game_str)
         g.buildLevel(map_str)
         senv = SubjectiveGame(g, actionDelay=100, recordingEnabled=True)
@@ -105,7 +105,7 @@ class VGDLParser(object):
         """ Whatever is visible in the global namespace (after importing the ontologies)
         can be used in the VGDL, and is evaluated.
         """
-        from ontology import * # @UnusedWildImport
+        from .ontology import * # @UnusedWildImport
         return eval(estr)
 
     def parseInteractions(self, inodes):
@@ -116,7 +116,7 @@ class VGDLParser(object):
                 class1, class2 = [x.strip() for x in pair.split(" ") if len(x)>0]
                 self.game.collision_eff.append(tuple([class1, class2, eclass, args]))
                 if self.verbose:
-                    print "Collision", pair, "has effect:", edef
+                    print("Collision", pair, "has effect:", edef)
         #print self.game.collision_eff
 
     def parseTerminations(self, tnodes):
@@ -126,7 +126,7 @@ class VGDLParser(object):
         for tn in tnodes:
             sclass, args = self._parseArgs(tn.content)
             if self.verbose:
-                print "Adding:", sclass, args
+                print("Adding:", sclass, args)
             self.game.terminations.append(sclass(**args))
 
     def parseConditions(self, cnodes):
@@ -151,7 +151,7 @@ class VGDLParser(object):
 
             if len(sn.children) == 0:
                 if self.verbose:
-                    print "Defining:", key, sclass, args, stypes
+                    print("Defining:", key, sclass, args, stypes)
                 self.game.sprite_constr[key] = (sclass, args, stypes)
                 # self.game.sprite_groups[key] = [] ##Added 4/30
                 if key in self.game.sprite_order:
@@ -168,7 +168,7 @@ class VGDLParser(object):
             # a char can map to multiple sprites
             keys = [x.strip() for x in val.split(" ") if len(x)>0]
             if self.verbose:
-                print "Mapping", c, keys
+                print("Mapping", c, keys)
             self.game.char_mapping[c] = keys
 
     def _parseArgs(self, s,  sclass=None, args=None):
@@ -221,13 +221,13 @@ class BasicGame(object):
     load_save_enabled = True
 
     def __init__(self, **kwargs):
-        from ontology import Immovable, DARKGRAY, BLACK, MovingAvatar, GOLD
-        for name, value in kwargs.iteritems():
+        from .ontology import Immovable, DARKGRAY, BLACK, MovingAvatar, GOLD
+        for name, value in kwargs.items():
             # print "NAME: ", name
             if hasattr(self, name):
                 self.__dict__[name] = value
             else:
-                print "WARNING: undefined parameter '%s' for game! "%(name)
+                print("WARNING: undefined parameter '%s' for game! "%(name))
 
         # contains mappings to constructor (just a few defaults are known)
         self.sprite_constr = {'wall': (Immovable, {'color': DARKGRAY}, ['wall']),
@@ -280,9 +280,9 @@ class BasicGame(object):
         self.all_killed=[] # All items that have been killed
 
     def buildLevel(self, lstr):
-        from ontology import stochastic_effects
+        from .ontology import stochastic_effects
         lines = [l for l in lstr.split("\n") if len(l)>0]
-        lengths = map(len, lines)
+        lengths = list(map(len, lines))
         assert min(lengths)==max(lengths), "Inconsistent line lengths."
         self.width = lengths[0]
         self.height = len(lines)
@@ -295,7 +295,7 @@ class BasicGame(object):
         self.screensize = (self.width*self.block_size, self.height*self.block_size)
 
         # set up resources
-        for res_type, (sclass, args, _) in self.sprite_constr.iteritems():
+        for res_type, (sclass, args, _) in self.sprite_constr.items():
             if issubclass(sclass, Resource):
                 if 'res_type' in args:
                     res_type = args['res_type']
@@ -352,7 +352,7 @@ class BasicGame(object):
 
         for key in keys:
             if self.num_sprites > self.MAX_SPRITES:
-                print "Sprite limit reached."
+                print("Sprite limit reached.")
                 return
             sclass, args, stypes = self.sprite_constr[key]
             # verify the singleton condition
@@ -390,7 +390,7 @@ class BasicGame(object):
             self.screen = pygame.display.set_mode((1,1))
             self.background = pygame.Surface(size)
         else:
-            from ontology import LIGHTGRAY
+            from .ontology import LIGHTGRAY
             pygame.init()
             self.screen = pygame.display.set_mode(size)
             self.background = pygame.Surface(size)
@@ -427,7 +427,7 @@ class BasicGame(object):
     def getAvatars(self):
         """ The currently alive avatar(s) """
         res = []
-        for ss in self.sprite_groups.values():
+        for ss in list(self.sprite_groups.values()):
             if ss and isinstance(ss[0], Avatar):
                 res.extend([s for s in ss if s not in self.kill_list])
         return res
@@ -494,7 +494,7 @@ class BasicGame(object):
                     ss[str(pos)] = attrs
                 else:
                     ss[pos] = attrs
-                for a, val in s.__dict__.iteritems():
+                for a, val in s.__dict__.items():
                     if a not in ias:
                         attrs[a] = val
                 if s.resources:
@@ -511,17 +511,17 @@ class BasicGame(object):
         self.reset()
         self.score = fs['score']
         self.ended = fs['ended']
-        for key, ss in fs['objects'].iteritems():
+        for key, ss in fs['objects'].items():
             self.sprite_groups[key] = [] ## Added 4/31/17
-            for ID, attrs in ss.iteritems():
+            for ID, attrs in ss.items():
                 try:
                     p = attrs['x'], attrs['y']
                 except:
                     p = attrs[x], attrs[y]
                 s = self._createSprite_cheap(key, p)
-                for a, val in attrs.iteritems():
+                for a, val in attrs.items():
                     if a == 'resources':
-                        for r, v in val.iteritems():
+                        for r, v in val.items():
                             s.resources[r] = v
                     else:
                         s.__setattr__(a, val)
@@ -657,7 +657,7 @@ class BasicGame(object):
 
                         if dim:
                             sprites = self.getSprites(classprite1)
-                            spritesFiltered = filter(lambda sprite: sprite.__dict__[dim] == sprite2.__dict__[dim], sprites)
+                            spritesFiltered = [sprite for sprite in sprites if sprite.__dict__[dim] == sprite2.__dict__[dim]]
                             for sC in spritesFiltered:
                                 new_effects.append((effect, sprite1, sC, self, kwargs))
                                 spritesActedOn.add(sprite1)
@@ -749,9 +749,9 @@ class BasicGame(object):
         sprite_output = "output/{}_{}_sprites.txt".format(name,timestamp)
 
         # --------- Game-play ------------
-        from ontology import Immovable, Passive, Resource, ResourcePack, RandomNPC, Chaser, AStarChaser, OrientedSprite, Missile
-        from ontology import initializeDistribution, updateDistribution, updateOptions, sampleFromDistribution
-        from ontology import spriteInduction
+        from .ontology import Immovable, Passive, Resource, ResourcePack, RandomNPC, Chaser, AStarChaser, OrientedSprite, Missile
+        from .ontology import initializeDistribution, updateDistribution, updateOptions, sampleFromDistribution
+        from .ontology import spriteInduction
         # from theory_template import *
         finalEventList = []
         agentStatePrev = {}
@@ -783,7 +783,7 @@ class BasicGame(object):
             try:
                 self.setFullState(self.playback_states[self.playback_index])
             except:
-                print "playback is failing"
+                print("playback is failing")
                 embed()
 
             # Save the event and agent state
@@ -829,11 +829,11 @@ class BasicGame(object):
         if win:
             self.score += 1
             self.win = True
-            print "Game won, with score %s" % self.score
+            print("Game won, with score %s" % self.score)
         else:
             self.score -= 1
             self.win = False
-            print "Playback is incomplete, or game is lost. Score=%s" % self.score
+            print("Playback is incomplete, or game is lost. Score=%s" % self.score)
 
         # ipdb.set_trace()
 
@@ -873,9 +873,9 @@ class BasicGame(object):
         sprite_output = "output/{}_{}_sprites.txt".format(name,timestamp)
 
         # --------- Game-play ------------
-        from ontology import Immovable, Passive, Resource, ResourcePack, RandomNPC, Chaser, AStarChaser, OrientedSprite, Missile
-        from ontology import initializeDistribution, updateDistribution, updateOptions, sampleFromDistribution
-        from ontology import spriteInduction
+        from .ontology import Immovable, Passive, Resource, ResourcePack, RandomNPC, Chaser, AStarChaser, OrientedSprite, Missile
+        from .ontology import initializeDistribution, updateDistribution, updateOptions, sampleFromDistribution
+        from .ontology import spriteInduction
         # from theory_template import *
         finalEventList = []
         agentStatePrev = {}
@@ -890,7 +890,7 @@ class BasicGame(object):
         self.all_objects = self.getObjects() # Save all objects, some which may be killed in game
 
         ##figure out keypress type:
-        disableContinuousKeyPress = all([self.all_objects[k]['sprite'].physicstype.__name__=='GridPhysics' for k in self.all_objects.keys()])
+        disableContinuousKeyPress = all([self.all_objects[k]['sprite'].physicstype.__name__=='GridPhysics' for k in list(self.all_objects.keys())])
 
         objects = self.getObjects()
         self.spriteDistribution = {}
@@ -933,7 +933,7 @@ class BasicGame(object):
                         #     self.keystate = tuple(self.keystate)
                         #     self.playback_index += 1
 
-                        if lastKeyPress.index(1) in keyPresses.keys():
+                        if lastKeyPress.index(1) in list(keyPresses.keys()):
                             keyPressType = keyPresses[lastKeyPress.index(1)]
                             # print keyPressType
 
@@ -992,18 +992,18 @@ class BasicGame(object):
                         #     self.score = 1
 
                         self.win = True
-                        print time.time()-t1, len(self.actions), win, self.score
-                        print "Game won, with score %s" % self.score
+                        print(time.time()-t1, len(self.actions), win, self.score)
+                        print("Game won, with score %s" % self.score)
                     else:
                         self.win = False
                         self.score -=1 ## Added 3/16/17
-                        print time.time()-t1, len(self.actions), win, self.score
-                        print "Game lost. Score=%s" % self.score
+                        print(time.time()-t1, len(self.actions), win, self.score)
+                        print("Game lost. Score=%s" % self.score)
                     np.save("temp_data.npy", [time.time()-t1, len(self.actions), self.win, self.score])
                     allStates.append(self.getFullState())
 
                     pygame.time.wait(10)
-                    print len(self.actions), win, self.score
+                    print(len(self.actions), win, self.score)
                     return win, self.score
                     # pygame.quit()
                     # sys.exit()
@@ -1048,7 +1048,7 @@ class BasicGame(object):
             allStates.append(self.getFullState())
 
         if(persist_movie):
-            print "Creating Movie"
+            print("Creating Movie")
             self.video_file = "./videos/" +  str(self.uiud) + ".mp4"
             subprocess.call(["ffmpeg","-y",  "-r", "30", "-b", "800", "-i", tmpl, self.video_file ])
             [os.remove(f) for f in glob.glob(tmp_dir + "*" + str(self.uiud) + "*")]
@@ -1072,19 +1072,19 @@ class BasicGame(object):
                 # self.score = 1
             self.score +=1 # Added 3/16/17
             self.win = True
-            print "Game won, with score %s" % self.score
+            print("Game won, with score %s" % self.score)
             np.save("temp_data.npy", [time.time()-t1, len(self.actions), self.win, self.score])
 
         else:
             self.win = False
             self.score -=1 # Added 3/16/17
-            print "Game lost. Score=%s" % self.score
+            print("Game lost. Score=%s" % self.score)
             np.save("temp_data.npy", [time.time()-t1, len(self.actions), self.win, self.score])
 
 
         # pause a few frames for the player to see the final screen.
         pygame.time.wait(10)
-        print len(self.actions), win, self.score
+        print(len(self.actions), win, self.score)
         return win, self.score
 
 
@@ -1092,7 +1092,7 @@ class BasicGame(object):
         return self.getAvatars()[0].declare_possible_actions()
 
     def startGameExternalPlayer(self, headless, persist_movie, movie_dir):
-        print "in startgameexternalplayer"
+        print("in startgameexternalplayer")
         embed()
         self._initScreen(self.screensize, headless)
         pygame.display.flip()
@@ -1171,7 +1171,7 @@ class VGDLSprite(object):
     shrinkfactor=0
 
     def __init__(self, pos, size=(10,10), color=None, speed=None, cooldown=None, physicstype=None, **kwargs):
-        from ontology import GridPhysics
+        from .ontology import GridPhysics
         self.rect = pygame.Rect(pos, size)
         self.x = pos[0]
         self.y = pos[1]
@@ -1193,11 +1193,11 @@ class VGDLSprite(object):
 
 
         #self.color = color or self.color or (choice(self.COLOR_DISC), choice(self.COLOR_DISC), choice(self.COLOR_DISC))
-        for name, value in kwargs.iteritems():
+        for name, value in kwargs.items():
             try:
                 self.__dict__[name] = value
             except:
-                print "WARNING: undefined parameter '%s' for sprite '%s'! "%(name, self.__class__.__name__)
+                print("WARNING: undefined parameter '%s' for sprite '%s'! "%(name, self.__class__.__name__))
         # how many timesteps ago was the last move?
         self.lastmove = 0
 
@@ -1237,7 +1237,7 @@ class VGDLSprite(object):
         return (self.rect[0]-self.lastrect[0], self.rect[1]-self.lastrect[1])
 
     def _draw(self, game):
-        from ontology import LIGHTGREEN
+        from .ontology import LIGHTGREEN
         screen = game.screen
         if self.shrinkfactor != 0:
             shrunk = self.rect.inflate(-self.rect.width*self.shrinkfactor,
@@ -1262,7 +1262,7 @@ class VGDLSprite(object):
 
     def _drawResources(self, game, screen, rect):
         """ Draw progress bars on the bottom third of the sprite """
-        from ontology import BLACK
+        from .ontology import BLACK
         tot = len(self.resources)
         barheight = rect.height/3.5/tot
         offset = rect.top+2*rect.height/3.

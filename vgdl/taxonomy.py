@@ -1,6 +1,6 @@
 # from theory_template_071416 import *
-from ontology import *
-from sampleVGDLString import *
+from .ontology import *
+from .sampleVGDLString import *
 # import pygraphviz as PG
 
 '''
@@ -30,22 +30,22 @@ class Tree(object):
 			self.ancestors.add(self)
 
 	def addChild(self, sprite):
-		if str(sprite) in self.members.keys():
-			print "{} already in tree.".format(sprite)
+		if str(sprite) in list(self.members.keys()):
+			print("{} already in tree.".format(sprite))
 			return
 		#if the parent is in the tree	
-		elif str(sprite.__base__) in self.members.keys():
+		elif str(sprite.__base__) in list(self.members.keys()):
 			parent = self.members[str(sprite.__base__)]
 			t = Tree(parent.name, sprite, parent)
 			t.head = self.head #inherit head from head of tree
 			parent.children.append(t)
 			t.head.members[str(sprite)] = t
 			# A.add_edge(str(parent.VGDLType), str(sprite))
-			print "added self, {}".format(sprite)
+			print("added self, {}".format(sprite))
 		 #Otherwise, add the sprite's parent and then add the sprite.
 		else:
 			self.addChild(sprite.__base__)
-			print "added parent, {}".format(sprite.__base__)
+			print("added parent, {}".format(sprite.__base__))
 			self.addChild(sprite)
 
 	def distance(self, n1, n2):

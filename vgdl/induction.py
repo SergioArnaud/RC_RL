@@ -1,5 +1,5 @@
 import sys, ast, time
-from theory_template import Game, TimeStep
+from .theory_template import Game, TimeStep
 from IPython import embed
 
 
@@ -31,14 +31,14 @@ def runInduction_DFS(vgdlString, gameOutput, maxTheories):
     ## but we need a string that is an ID that maps to each type.)
     def getObjectType(timestep, objectID, timesteps):
         objType = None
-        for k in timestep.gameState['objects'].keys():
-            if objectID in [o['ID'] for o in timestep.gameState['objects'][k].values()]:
+        for k in list(timestep.gameState['objects'].keys()):
+            if objectID in [o['ID'] for o in list(timestep.gameState['objects'][k].values())]:
                 objType = k
                 return objType
         if objType==None:
             for t in timesteps:
-                for k in t.gameState['objects'].keys():
-                    if objectID in [o['ID'] for o in t.gameState['objects'][k].values()]:
+                for k in list(t.gameState['objects'].keys()):
+                    if objectID in [o['ID'] for o in list(t.gameState['objects'][k].values())]:
                         objType = k
                         return objType
     #trace[0] contains all timesteps
@@ -46,7 +46,7 @@ def runInduction_DFS(vgdlString, gameOutput, maxTheories):
         timestep = trace[0][i]
         for j in range(len(timestep.events)):
             event = timestep.events[j]
-            print event
+            print(event)
             if len(event)==3:
                 timestep.events[j] = (event[0], getObjectType(timestep, event[1], trace[0]), getObjectType(timestep, event[2], trace[0]))
             elif len(event)==2:

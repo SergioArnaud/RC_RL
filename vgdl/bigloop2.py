@@ -1,11 +1,11 @@
-from mcts import *
-from util import *
-from core import colorDict
-from ontology import Immovable, Passive, Resource, ResourcePack, RandomNPC, Chaser, AStarChaser, OrientedSprite, Missile
-from ontology import initializeDistribution, updateDistribution, updateOptions, sampleFromDistribution, spriteInduction, selectSubgoal
-from theory_template import TimeStep, Precondition, InteractionRule, TerminationRule, TimeoutRule, SpriteCounterRule, MultiSpriteCounterRule, ruleCluster, Theory, Game, writeTheoryToTxt
+from .mcts import *
+from .util import *
+from .core import colorDict
+from .ontology import Immovable, Passive, Resource, ResourcePack, RandomNPC, Chaser, AStarChaser, OrientedSprite, Missile
+from .ontology import initializeDistribution, updateDistribution, updateOptions, sampleFromDistribution, spriteInduction, selectSubgoal
+from .theory_template import TimeStep, Precondition, InteractionRule, TerminationRule, TimeoutRule, SpriteCounterRule, MultiSpriteCounterRule, ruleCluster, Theory, Game, writeTheoryToTxt
 import importlib
-from rlenvironmentnonstatic import createRLInputGame
+from .rlenvironmentnonstatic import createRLInputGame
 
 '''
 ## helpful functions or access methods:
@@ -21,7 +21,7 @@ def playEpisode(rleCreateFunc, hypotheses=[], unknown_objects=False, goalColor=N
 
 																						## Initialize rle the agent behaves in.
 	rle = rleCreateFunc()
-	rle._game.unknown_objects = rle._game.sprite_groups.keys()
+	rle._game.unknown_objects = list(rle._game.sprite_groups.keys())
 	rle._game.unknown_objects.remove('avatar') 											## For now we're asumming agent knows self.
 	rle.agentStatePrev = {}
 	all_objects = rle._game.getObjects()
@@ -40,12 +40,12 @@ def playEpisode(rleCreateFunc, hypotheses=[], unknown_objects=False, goalColor=N
 
 	## Fix this mess. Store the unknown categories. Select among those for a goal, and then provide that to selectToken.
 	if unknown_categories==False:
-		print "initializing unknown objects:"
-		unknown_categories = [k for k in rle._game.sprite_groups.keys() if k!='avatar']
-		print [colorDict[str(rle._game.sprite_groups[k][0].color)] for k in unknown_categories]
+		print("initializing unknown objects:")
+		unknown_categories = [k for k in list(rle._game.sprite_groups.keys()) if k!='avatar']
+		print([colorDict[str(rle._game.sprite_groups[k][0].color)] for k in unknown_categories])
 	else:
-		print "already know some objects. Unknown:"
-		print [colorDict[str(rle._game.sprite_groups[k][0].color)] for k in unknown_categories]
+		print("already know some objects. Unknown:")
+		print([colorDict[str(rle._game.sprite_groups[k][0].color)] for k in unknown_categories])
 
 
 	# if unknown_objects==False: ##uninitialized
@@ -99,18 +99,18 @@ def playEpisode(rleCreateFunc, hypotheses=[], unknown_objects=False, goalColor=N
 			Vrle.immovables = immovables
 
 		if goalColor:
-			key = [k for k in rle._game.sprite_groups.keys() if \
+			key = [k for k in list(rle._game.sprite_groups.keys()) if \
 			colorDict[str(rle._game.sprite_groups[k][0].color)]==goalColor][0]
 			actual_goal = rle._game.sprite_groups[key][0]
 			object_goal = actual_goal
-			print "goal is known:", goalColor
+			print("goal is known:", goalColor)
 		else:
 			try:
 				object_goal = random.choice(unknown_objects)
 				embed()
 				subgoalLocation = selectSubgoalToken(Vrle, 'wall', unknown_objects)
 			except:
-				print "no unknown objects and no goal? Embedding so you can debug."
+				print("no unknown objects and no goal? Embedding so you can debug.")
 				embed()
 
 
@@ -148,7 +148,7 @@ def playEpisode(rleCreateFunc, hypotheses=[], unknown_objects=False, goalColor=N
 			hypotheses[0].goalColor=goalColor
 
 	if playback:			## TODO: Aritro cleans this up.
-		print "in playback"
+		print("in playback")
 		from vgdl.core import VGDLParser
 		from examples.gridphysics.simpleGame4 import level, game
 		playbackGame = push_game
@@ -180,6 +180,6 @@ if __name__ == "__main__":
 			unknown_objects=unknown_objects, goalColor=goalColor, finalEventList=finalEventList, \
 			playback=True)
 		tally.append(won)
-		print "episode ended. Win:", won
-		print "__________________________________________________"
-	print "Won", sum(tally), "out of ", len(tally), "episodes."
+		print("episode ended. Win:", won)
+		print("__________________________________________________")
+	print("Won", sum(tally), "out of ", len(tally), "episodes.")

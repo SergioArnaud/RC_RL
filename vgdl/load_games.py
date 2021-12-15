@@ -1,11 +1,11 @@
-from main_agent import Agent
+from .main_agent import Agent
 from games_to_hyperparameters import *
 import time
 import dill
 import os
 from IPython import embed
 import argparse
-from util import str2bool
+from .util import str2bool
 
 parser = argparse.ArgumentParser(description='Process game number.')
 parser.add_argument('--game_number', type=int, default=0, help='game number')
@@ -89,7 +89,7 @@ hyperparameter_sets = [
 
 def gen_color():
     from vgdl.colors import colorDict
-    color_list = colorDict.values()
+    color_list = list(colorDict.values())
     color_list = [c for c in color_list if c not in ['UUWSWF']]
     for color in color_list:
         yield color
@@ -141,11 +141,11 @@ def play_trainset(hyperparameter_sets, hyperparameter_index):
 
     ##then pass this down for multiple episodes
     gameObject = None
-    print game_levels
+    print(game_levels)
 
     agent.playCurriculum(level_game_pairs=level_game_pairs, make_movie=make_movie)
 
-    print game_levels
+    print(game_levels)
 
     total_time = time.time() - start_time
 

@@ -1,6 +1,6 @@
 
 import math
-import core
+from . import core
 from IPython import embed
 import pygame
 #from tools import logToFile

@@ -1,5 +1,5 @@
 from IPython import embed
-from planner import *
+from .planner import *
 import itertools
 
 ACTIONS = [(1,0), (-1,0), (0,1), (0,-1)]
@@ -8,12 +8,12 @@ ACTIONS = [(1,0), (-1,0), (0,1), (0,-1)]
 class WBP(Planner):
 	def __init__(self, rle, gameString, levelString, gameFilename, display):
 		Planner.__init__(self, rle, gameString, levelString, gameFilename, display)
-		self.T = len(rle._obstypes.keys())+1 #number of object types. Adding avatar, which is not in obstypes.
+		self.T = len(list(rle._obstypes.keys()))+1 #number of object types. Adding avatar, which is not in obstypes.
 		self.vecDim = [rle.outdim[0]*rle.outdim[1], 2, self.T]
 		self.trueAtoms = set() ## set of atoms that have been true at some point thus far in the planner.
-		self.objectTypes = rle._game.sprite_groups.keys()
+		self.objectTypes = list(rle._game.sprite_groups.keys())
 		self.objectTypes.sort()
-		self.phiSize = sum([len(rle._game.sprite_groups[k]) for k in rle._game.sprite_groups.keys()])
+		self.phiSize = sum([len(rle._game.sprite_groups[k]) for k in list(rle._game.sprite_groups.keys())])
 		self.maxNumObjects = 6
 
 	def calculateAtoms(self, rle):
@@ -106,7 +106,7 @@ class WBP(Planner):
 		if n%2==1:
 			decomposition.append(0)
 			n = n-1
-		i = len(rle._obstypes.keys())
+		i = len(list(rle._obstypes.keys()))
 		while i>0:
 			if n>=2**i:
 				decomposition.append(i)
@@ -132,7 +132,7 @@ class WBP(Planner):
 		return mergedList
 
 	def factorizeBoolean(self, rle, n):
-		listLen = len(rle._obstypes.keys())+1
+		listLen = len(list(rle._obstypes.keys()))+1
 		return self.indicesToBooleans(self.T, self.factorize(rle, n))
 
 	def findTrueTuples(self, node, k):
@@ -276,12 +276,12 @@ class Node():
 					vrle.step(self.actionSeq[-1])
 					terminal = vrle._isDone()[0]
 			except:
-				print "conditions met but copy failed"
+				print("conditions met but copy failed")
 				embed()
 		else:
 		# except:
 			self.reconstructed=True
-			print "copy failed; replaying from top"
+			print("copy failed; replaying from top")
 			# embed()
 			vrle = copy.deepcopy(rle)
 			terminal = vrle._isDone()[0]
@@ -291,8 +291,8 @@ class Node():
 				terminal = vrle._isDone()[0]
 				i += 1
 		if len(self.actionSeq)>0:
-			print self.actionSeq[-1]
-		print vrle.show()
+			print(self.actionSeq[-1])
+		print(vrle.show())
 		# if len(vrle._game.sprite_groups['probe'])==0:
 			# self.WBP.findAvatarInRLE(vrle) == (2,4):
 			# embed()
@@ -311,11 +311,11 @@ class Node():
 		vrle = copy.deepcopy(self.rle)
 		terminal = vrle._isDone()[0]
 		i=0
-		print vrle.show()
+		print(vrle.show())
 		while not terminal:
 			a = self.actionSeq[i]
 			vrle.step(a)
-			print vrle.show()
+			print(vrle.show())
 			terminal = vrle._isDone()[0]
 			i+=1
 
@@ -396,7 +396,7 @@ if __name__ == "__main__":
 
 	t1 = time.time()
 	last, visited, rejected, visitedStates = BFS(rle, p, 2)
-	print len(visited), len(rejected)
-	print time.time()-t1
+	print(len(visited), len(rejected))
+	print(time.time()-t1)
 	embed()
 

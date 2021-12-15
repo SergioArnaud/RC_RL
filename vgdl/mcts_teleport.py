@@ -1,15 +1,15 @@
 import numpy as np
 from numpy import zeros
 import pygame    
-from ontology import BASEDIRS
-from core import VGDLSprite
-from stateobsnonstatic import StateObsHandlerNonStatic 
-from rlenvironmentnonstatic import *
+from .ontology import BASEDIRS
+from .core import VGDLSprite
+from .stateobsnonstatic import StateObsHandlerNonStatic 
+from .rlenvironmentnonstatic import *
 import argparse
 import random
 from IPython import embed
 import math
-from Queue import Queue
+from queue import Queue
 from threading import Thread
 import time
 
@@ -124,7 +124,7 @@ class Basic_MCTS:
 			rle = self.rleCreateFunc(OBSERVATION_GLOBAL)
 			# rle = q.get()
 			if i%10==0:
-				print "Training cycle: %i"%i
+				print("Training cycle: %i"%i)
 
 			# rle = self.rleCreateFunc(self.obsType)
 			reward, vl, iters = self.treePolicy(self.root, rle, step_horizon)
@@ -136,9 +136,9 @@ class Basic_MCTS:
 
 		# for worker in workers:
 		# 	worker.join()
-		print "Tree policy iters:", tree_policy_iters
-		print "Default policy iters:", default_policy_iters
-		print "Total time: %f"%(time.time()-oldTime)
+		print("Tree policy iters:", tree_policy_iters)
+		print("Default policy iters:", default_policy_iters)
+		print("Total time: %f"%(time.time()-oldTime))
 
 
 	def getBestActionsForPlayout(self):
@@ -168,18 +168,18 @@ class Basic_MCTS:
 
 	def debug(self):
 		v = self.root
-		print np.reshape(v.state, self.outdim)
+		print(np.reshape(v.state, self.outdim))
 		actions, nodes = [], []
 		while v and not v.terminal:
 			# print v.children.iteritems()
-			print [(k,c.qVal) for k,c in v.children.iteritems()]
+			print([(k,c.qVal) for k,c in v.children.items()])
 			a, v = self.bestChild(v,0)
 			actions.append(a)
 			nodes.append(v)
 			if v:
-				print a
-				print np.reshape(v.state, self.outdim)
-				print ""
+				print(a)
+				print(np.reshape(v.state, self.outdim))
+				print("")
 
 		return actions, nodes
 
@@ -242,7 +242,7 @@ class Basic_MCTS:
 
 
 	def expand(self, v, rle):
-		print "in expand"
+		print("in expand")
 		# embed()
 		expan_action = None
 		child = None
@@ -276,7 +276,7 @@ class Basic_MCTS:
 		maxFuncVal = -float('inf')
 		bestChild = None
 		bestAction = None
-		for a,c in v.children.items():
+		for a,c in list(v.children.items()):
 			if v.equals(c):
 				funcVal = -float('inf')
 			elif c.visitCount == 0:
@@ -332,9 +332,9 @@ class Basic_MCTS:
 			for vec in vecDist:
 				vecDist[vec] /= vecDistSum
 
-			samples = np.random.multinomial(1, vecDist.values(), size=1)
+			samples = np.random.multinomial(1, list(vecDist.values()), size=1)
 			sample_index = np.nonzero(samples)[1][0]
-			sample = vecDist.keys()[sample_index]
+			sample = list(vecDist.keys())[sample_index]
 			# print vecDist, samples, sample_index, sample
 			# sample = np.random.choice(vecDist.keys(), 1, vecDist.values())[0]
 			a = sample

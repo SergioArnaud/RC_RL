@@ -1,10 +1,10 @@
 import numpy as np
 from numpy import zeros
 import pygame    
-from ontology import BASEDIRS
-from core import VGDLSprite, colorDict
-from stateobsnonstatic import StateObsHandlerNonStatic 
-from rlenvironmentnonstatic import *
+from .ontology import BASEDIRS
+from .core import VGDLSprite, colorDict
+from .stateobsnonstatic import StateObsHandlerNonStatic 
+from .rlenvironmentnonstatic import *
 import argparse
 import random
 from IPython import embed
@@ -14,14 +14,14 @@ from collections import defaultdict, deque
 import time
 import copy
 from threading import Lock
-from Queue import Queue
+from queue import Queue
 import multiprocessing
-from qlearner import *
-from ontology import Immovable, Passive, Resource, ResourcePack, RandomNPC, Chaser, AStarChaser, OrientedSprite, Missile
-from ontology import initializeDistribution, updateDistribution, updateOptions, sampleFromDistribution, spriteInduction, selectObjectGoal
-from theory_template import TimeStep, Precondition, InteractionRule, TerminationRule, TimeoutRule, SpriteCounterRule, MultiSpriteCounterRule, \
+from .qlearner import *
+from .ontology import Immovable, Passive, Resource, ResourcePack, RandomNPC, Chaser, AStarChaser, OrientedSprite, Missile
+from .ontology import initializeDistribution, updateDistribution, updateOptions, sampleFromDistribution, spriteInduction, selectObjectGoal
+from .theory_template import TimeStep, Precondition, InteractionRule, TerminationRule, TimeoutRule, SpriteCounterRule, MultiSpriteCounterRule, \
 generateSymbolDict, ruleCluster, Theory, Game, writeTheoryToTxt, generateTheoryFromGame
-from rlenvironmentnonstatic import createRLInputGame
+from .rlenvironmentnonstatic import createRLInputGame
 
 #A hack to display things to the terminal conveniently.
 np.core.arrayprint._line_width=250
@@ -56,7 +56,7 @@ class OLETS_agent:
 	def __init__(self, existing_rle=False, game = None, level = None, partitionWeights=[1,0,1],\
 		         rleCreateFunc=False, obsType = OBSERVATION_GLOBAL, decay_factor=.8, num_workers=1):
 		if not existing_rle and not rleCreateFunc:
-			print "You must pass either an existing rle or an rleCreateFunc"
+			print("You must pass either an existing rle or an rleCreateFunc")
 			return
 		# assumption: not starting on terminal state
 		"""
@@ -113,7 +113,7 @@ class OLETS_agent:
 
 		self.visitedLocations = defaultdict(lambda:0)
 
-		if 'avatar' in self._obstypes.keys():
+		if 'avatar' in list(self._obstypes.keys()):
 			inverted_avatar_loc=self._obstypes['avatar'][0]
 			avatar_loc = (inverted_avatar_loc[1], inverted_avatar_loc[0])
 			self.avatar_code = np.reshape(self.rle._getSensors(), self.outdim)[avatar_loc[0]][avatar_loc[1]]
@@ -151,10 +151,10 @@ class OLETS_agent:
 			# print "immovables", immovables
 		except:
 			immovables = ['wall', 'poison']
-			print "Using defaults as immovables", immovables
+			print("Using defaults as immovables", immovables)
 
 		for i in immovables:
-			if i in self._obstypes.keys():
+			if i in list(self._obstypes.keys()):
 				immovable_codes.append(2**(1+sorted(self._obstypes.keys())[::-1].index(i)))
 
 		actionDict = defaultdict(list)
@@ -187,7 +187,7 @@ class OLETS_agent:
 		while len(self.rewardQueue)>0:
 			loc = self.rewardQueue.popleft()
 			if loc not in self.processed:
-				valid_neighbors = [n for n in self.neighborDict[loc] if n in self.rewardDict.keys()]
+				valid_neighbors = [n for n in self.neighborDict[loc] if n in list(self.rewardDict.keys())]
 				self.rewardDict[loc] = max([self.rewardDict[n] for n in valid_neighbors]) * self.pseudoRewardDecay
 				self.processed.append(loc)
 				for n in self.neighborDict[loc]:
@@ -234,8 +234,8 @@ class OLETS_agent:
 			Vrle = copy.deepcopy(self.rle)
 
 			if i%100==0 and len(rewards)>0:
-				print "Training cycle: %i"%i
-				print "avg. rewards for last group of 100", np.mean(rewards[-100:])
+				print("Training cycle: %i"%i)
+				print("avg. rewards for last group of 100", np.mean(rewards[-100:]))
 
 			reward, v, iters, terminal = self.runSimulation(self.root, Vrle, step_horizon)
 
@@ -244,7 +244,7 @@ class OLETS_agent:
 	def getBestActionsForPlayout(self, partitionWeights, debug=False):
 		v = self.root
 		actions = []
-		while len(v.children.keys())>0:
+		while len(list(v.children.keys()))>0:
 			a, v = self.pickAction(v)
 			actions.append(a)
 			v = v.children[a]
@@ -264,8 +264,8 @@ class OLETS_agent:
 				bestAction = a
 
 		if bestAction == None:	## Tiebreaker
-			bestAction = random.choice(v.children.keys())
-		print bestAction, bestVal
+			bestAction = random.choice(list(v.children.keys()))
+		print(bestAction, bestVal)
 		return bestAction
 
 	def runSimulation(self, v, rle, step_horizon, solveSteps = None):
@@ -278,9 +278,9 @@ class OLETS_agent:
 			count += 1
 			avatarLoc = self.findAvatarInRLE(rle)
 			self.visitedLocations[avatarLoc] +=1
-			if len(v.children.keys()) != len(self.actionDict[avatarLoc]):
-				print "not expanded"
-				print v.children.keys(), self.actionDict[avatarLoc]
+			if len(list(v.children.keys())) != len(self.actionDict[avatarLoc]):
+				print("not expanded")
+				print(list(v.children.keys()), self.actionDict[avatarLoc])
 				reward, c = self.expand(v, rle, domain_knowledge=True)
 				return reward, c, iters, terminal
 			else:
@@ -291,13 +291,13 @@ class OLETS_agent:
 				reward = res['reward']
 				avatarLoc = self.findAvatarInRLE(rle)
 				self.visitedLocations[avatarLoc] += 1
-				print rle.show()
-				if a not in v.children.keys():
-					print a, "not in children.keys"
+				print(rle.show())
+				if a not in list(v.children.keys()):
+					print(a, "not in children.keys")
 					embed()
 				v = v.children[a]
 				terminal = rle._isDone()[0]
-		print "ended run"
+		print("ended run")
 		# embed()		
 		v.n_e += 1
 		v.R_e += reward
@@ -313,13 +313,13 @@ class OLETS_agent:
 		else:
 			action_choices = self.actions
 
-		print "in expand", len(action_choices), len(v.children.keys())
+		print("in expand", len(action_choices), len(list(v.children.keys())))
 		for a in action_choices:
-			if a not in v.children.keys():
+			if a not in list(v.children.keys()):
 				expand_action = a
 				res = rle.step(a)
-				print a
-				print rle.show()
+				print(a)
+				print(rle.show())
 				avatarLoc = self.findAvatarInRLE(rle)
 				self.visitedLocations[avatarLoc] +=1
 				new_state = res["observation"]
@@ -343,7 +343,7 @@ class OLETS_agent:
 			# embed()
 			v.n_s += 1
 			try:
-				v.R_m = v.R_e/v.n_s + ((1-v.n_e)/v.n_s) * max([v.children[k].R_m for k in v.children.keys()])
+				v.R_m = v.R_e/v.n_s + ((1-v.n_e)/v.n_s) * max([v.children[k].R_m for k in list(v.children.keys())])
 			except:
 				v.R_m = v.R_e/v.n_s + ((1-v.n_e)/v.n_s)
 			v = v.parent
@@ -380,7 +380,7 @@ class node:
 		if action not in self.children:
 		    self.children[action] = child
 		    # if domain_knowledge:
-		    self.expanded = len(self.children.keys()) == len(self.tree.actionDict[avatar_loc])
+		    self.expanded = len(list(self.children.keys())) == len(self.tree.actionDict[avatar_loc])
 		    # print"creating Child"
 		    # print action
 		    # print self.children.keys(), self.tree.actionDict[avatar_loc]
@@ -388,7 +388,7 @@ class node:
 			# else:
 				# self.expanded = len(self.children.keys()) == len(self.actions)
 		else:
-			print "createChild got called but with an existing action."
+			print("createChild got called but with an existing action.")
 
 if __name__ == "__main__":
 	
@@ -403,23 +403,23 @@ if __name__ == "__main__":
 	gameString, levelString = defInputGame(gameFilename, randomize=True)
 	rleCreateFunc = lambda: createRLInputGame(gameFilename)
 	rle = rleCreateFunc()
-	print rle.show()
+	print(rle.show())
 	# rle.immovables = ['wall', 'poison1', 'poison2']
-	print ""
-	print "Initializing learner. Playing", gameFilename
+	print("")
+	print("Initializing learner. Playing", gameFilename)
 
 	agent = OLETS_agent(rle, gameString, levelString)
 
 	t1 = time.time()
 	agent.OLETS(numTrainingCycles=100, step_horizon=100)
 	t2 = time.time() - t1
-	print "done in {} seconds".format(t2)
+	print("done in {} seconds".format(t2))
 
 	self=agent
 	v=agent.root
 	avatarLoc = self.findAvatarInRLE(rle)
 	actions = self.actionDict[avatarLoc]
-	print [(a, self.OLE(v, a, avatarLoc)) for a in actions]
+	print([(a, self.OLE(v, a, avatarLoc)) for a in actions])
 	embed()
 
 	bestAction = agent.pickAction(agent.root, rle)
@@ -427,8 +427,8 @@ if __name__ == "__main__":
 	agent.rle = rle
 	agent.root = agent.root.children[bestAction]
 	agent.OLETS(numTrainingCycles=500, step_horizon=100)
-	print rle.show()
+	print(rle.show())
 	v=agent.root
 	avatarLoc = self.findAvatarInRLE(rle)
 	actions = self.actionDict[avatarLoc]
-	print [(a, self.OLE(v, a, avatarLoc)) for a in actions]
+	print([(a, self.OLE(v, a, avatarLoc)) for a in actions])

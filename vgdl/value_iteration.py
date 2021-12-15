@@ -20,7 +20,7 @@ def value_iteration_algorithm(states, actions, transition, rewardFunc, gamma, it
 			for a in actions:
 				q_val = 0
 				newStateDist = transition[(prevState,a)]
-				for newState, newStateProb in newStateDist.items():
+				for newState, newStateProb in list(newStateDist.items()):
 					q_val += rewardFunc(prevState) + gamma * newStateProb * oldValues[newState]
 
 				newValues[prevState] = max(newValues[prevState], q_val)
@@ -28,7 +28,7 @@ def value_iteration_algorithm(states, actions, transition, rewardFunc, gamma, it
 		return newValues
 
 	values = {s: rewardFunc(s) for s in states}
-	terminationStates = {s for s,v in values.items() if v != 0}
+	terminationStates = {s for s,v in list(values.items()) if v != 0}
 	for i in range(iterations):
 		values = single_value_iteration(values,terminationStates)
 

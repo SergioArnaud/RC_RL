@@ -29,7 +29,7 @@ def addNewSprite(rle, spriteType, loc):
     rle._other_types.append(spriteType)
     rle._game.added_sprites.append(s)
     if spriteType not in rle.symbolDict:
-        idx=len(rle.symbolDict.keys())
+        idx=len(list(rle.symbolDict.keys()))
         rle.symbolDict[spriteType]=ALNUM[idx]
     
     for skey in rle._other_types:
@@ -44,8 +44,8 @@ def createNewClassInfo(theory):
     max_num = max([int(c[1:]) for c in existing_classes])
     class_num = max_num+1
     new_class_name = 'c'+str(class_num)
-    used_colors = theory.spriteObjects.keys()
-    color = next((c for c in colorDict.itervalues() if c not in used_colors), None)
+    used_colors = list(theory.spriteObjects.keys())
+    color = next((c for c in colorDict.values() if c not in used_colors), None)
     return new_class_name, color
 
 class GoalAgent(Agent):
@@ -97,7 +97,7 @@ class GoalAgent(Agent):
         h.interactionSet = [rule for rule in h.interactionSet 
                             if not(rule.slot1 == 'avatar' or rule.slot2 == 'avatar' or
                             rule.slot1 == 'EOS' and rule.slot2 == new_name)]
-        for (o1, o2) in itertools.product(['avatar'], h.classes.keys()):
+        for (o1, o2) in itertools.product(['avatar'], list(h.classes.keys())):
             if o2 == new_name:
                 continue
             kill_rule = InteractionRule('killSprite', o1, o2, {}, set())
@@ -112,11 +112,11 @@ class GoalAgent(Agent):
 
         newenv = self.initializeVrle(h)
         board = numpy.zeros(newenv.outdim)
-        for locs in newenv._game.sprite_groups.itervalues():
+        for locs in newenv._game.sprite_groups.values():
             for loc in locs:
                 board[loc.y / 30, loc.x / 30] = 1
-        for i in xrange(newenv.outdim[1]):
-            for j in xrange(newenv.outdim[0]):
+        for i in range(newenv.outdim[1]):
+            for j in range(newenv.outdim[0]):
                 if board[j][i] == 0:
                     addNewSprite(newenv, new_name, (i * 30, j * 30))
 
@@ -178,7 +178,7 @@ class GoalAgent(Agent):
                 episodes.append((n_level, steps, win, score))
                 episodes_played += 1
                 if win:
-                    print 'won'
+                    print('won')
                     break
                 i += 1
             if i < num_episodes_per_level:
@@ -192,18 +192,18 @@ class GoalAgent(Agent):
     def playGoalEpisode(self, n_level, episode_num, flexible_goals=False, win=False,alt_rle=None):
 
 
-        print "INSIDE OF PLAY GOAL EPISODE"
-        print "INSIDE OF PLAY GOAL EPISODE"
-        print "INSIDE OF PLAY GOAL EPISODE"
-        print "INSIDE OF PLAY GOAL EPISODE"
-        print "INSIDE OF PLAY GOAL EPISODE"
-        print "INSIDE OF PLAY GOAL EPISODE"
-        print "INSIDE OF PLAY GOAL EPISODE"
-        print "INSIDE OF PLAY GOAL EPISODE"
-        print "INSIDE OF PLAY GOAL EPISODE"
-        print "INSIDE OF PLAY GOAL EPISODE"
-        print "INSIDE OF PLAY GOAL EPISODE"
-        print "INSIDE OF PLAY GOAL EPISODE"
+        print("INSIDE OF PLAY GOAL EPISODE")
+        print("INSIDE OF PLAY GOAL EPISODE")
+        print("INSIDE OF PLAY GOAL EPISODE")
+        print("INSIDE OF PLAY GOAL EPISODE")
+        print("INSIDE OF PLAY GOAL EPISODE")
+        print("INSIDE OF PLAY GOAL EPISODE")
+        print("INSIDE OF PLAY GOAL EPISODE")
+        print("INSIDE OF PLAY GOAL EPISODE")
+        print("INSIDE OF PLAY GOAL EPISODE")
+        print("INSIDE OF PLAY GOAL EPISODE")
+        print("INSIDE OF PLAY GOAL EPISODE")
+        print("INSIDE OF PLAY GOAL EPISODE")
 
         self.initializeEnvironment()
 
@@ -229,7 +229,7 @@ class GoalAgent(Agent):
             else:
                 plan_rle = self.rle
 
-            planner_hyperparameters = dict((k, self.hyperparameters[k]) for k in self.hyperparameters.keys() if k not in ['idx', 'short_horizon', 'first_order_horizon'])
+            planner_hyperparameters = dict((k, self.hyperparameters[k]) for k in list(self.hyperparameters.keys()) if k not in ['idx', 'short_horizon', 'first_order_horizon'])
 
             ## Initialize planner
             p = WBP(plan_rle, self.gameFilename, theory=self.theory, fakeInteractionRules = self.fakeInteractionRules,
@@ -250,11 +250,11 @@ class GoalAgent(Agent):
                 solution = []
 
             if solution and not p.quitting:
-                print "============================================="
-                print "got solution of length", len(solution)
+                print("=============================================")
+                print("got solution of length", len(solution))
                 for g in p.gameString_array:
-                    print colored(g, 'green')
-                print "============================================="
+                    print(colored(g, 'green'))
+                print("=============================================")
 
             if self.shortHorizon:
                 if not solution:
@@ -264,7 +264,7 @@ class GoalAgent(Agent):
             else:
                 if (not solution) or p.quitting:
                     if self.longHorizonObservations<self.longHorizonObservationLimit:
-                        print "Didn't get solution or decided to quit. Observing, then replanning."
+                        print("Didn't get solution or decided to quit. Observing, then replanning.")
                         # embed()
                         self.wait(episode_num, num_steps=5)
                         solution = [] ## You may have gotten p.quitting but also a solution; make sure you don't try to act on that if the planner decided it wasn't worth it.
@@ -273,7 +273,7 @@ class GoalAgent(Agent):
                         quitting = True
 
             if emptyPlans > self.emptyPlansLimit:
-                print "observing"
+                print("observing")
                 # embed()
                 self.wait(episode_num, num_steps=5)
 
@@ -300,7 +300,7 @@ class GoalAgent(Agent):
                 ## You failed the game either because you made a mistake you couldn't recover from or because you timed out in your search.
                 ## Search more deeply next time.
                 self.max_nodes *= self.max_nodes_annealing
-                print "You got quitting==True from planner. Embedding to debug."
+                print("You got quitting==True from planner. Embedding to debug.")
                 # embed()
                 return False, self.rle._game.score, steps
         
@@ -310,22 +310,22 @@ class GoalAgent(Agent):
         score = self.rle._game.score
         output = "ended episode. Win={}                   						  ".format(win)
         if win:
-            print colored('________________________________________________________________', 'white', 'on_green')
-            print colored('________________________________________________________________', 'white', 'on_green')
+            print(colored('________________________________________________________________', 'white', 'on_green'))
+            print(colored('________________________________________________________________', 'white', 'on_green'))
 
-            print colored(output, 'white', 'on_green')
-            print colored('________________________________________________________________', 'white', 'on_green')
+            print(colored(output, 'white', 'on_green'))
+            print(colored('________________________________________________________________', 'white', 'on_green'))
         else:
-            print colored('________________________________________________________________', 'white', 'on_red')
-            print colored(output, 'white', 'on_red')
-            print colored('________________________________________________________________', 'white', 'on_red')
+            print(colored('________________________________________________________________', 'white', 'on_red'))
+            print(colored(output, 'white', 'on_red'))
+            print(colored('________________________________________________________________', 'white', 'on_red'))
 
         return win, score, steps
 
     def executeStep(self, episode_num, action):
         self.rle.step(action)
-        print "Game score: {}. Game tick: {}".format(self.rle._game.score, self.rle._game.time)
-        print self.rle.show(color='blue')
+        print("Game score: {}. Game tick: {}".format(self.rle._game.score, self.rle._game.time))
+        print(self.rle.show(color='blue'))
         envReal = self.fastcopy(self.rle)
         self.statesEncountered.append(self.rle._game.getFullState())
 
