@@ -1,23 +1,23 @@
 import numpy as np
 from numpy import zeros
 import pygame    
-from ontology import BASEDIRS
-from core import VGDLSprite, colorDict
-from stateobsnonstatic import StateObsHandlerNonStatic 
-from rlenvironmentnonstatic import *
+from .ontology import BASEDIRS
+from .core import VGDLSprite, colorDict
+from .stateobsnonstatic import StateObsHandlerNonStatic 
+from .rlenvironmentnonstatic import *
 import argparse
 import random
 from IPython import embed
 import math
-from Queue import Queue
+from queue import Queue
 from threading import Thread
 from collections import defaultdict, deque
 import time
 import copy
-from ontology import Immovable, Passive, Resource, ResourcePack, RandomNPC, Chaser, AStarChaser, OrientedSprite, Missile
-from ontology import initializeDistribution, updateDistribution, updateOptions, sampleFromDistribution, spriteInduction, selectSubgoal
-from theory_template import TimeStep, Precondition, InteractionRule, TerminationRule, TimeoutRule, SpriteCounterRule, MultiSpriteCounterRule, ruleCluster, Theory, Game, writeTheoryToTxt
-from rlenvironmentnonstatic import createRLInputGame
+from .ontology import Immovable, Passive, Resource, ResourcePack, RandomNPC, Chaser, AStarChaser, OrientedSprite, Missile
+from .ontology import initializeDistribution, updateDistribution, updateOptions, sampleFromDistribution, spriteInduction, selectSubgoal
+from .theory_template import TimeStep, Precondition, InteractionRule, TerminationRule, TimeoutRule, SpriteCounterRule, MultiSpriteCounterRule, ruleCluster, Theory, Game, writeTheoryToTxt
+from .rlenvironmentnonstatic import createRLInputGame
 
 #A hack to display things to the terminal conveniently.
 np.core.arrayprint._line_width=250
@@ -40,7 +40,7 @@ ACTIONS = {(0,0):'stay',(0,-1):'up', (0,1):'down', (1,0):'right', (-1,0):'left',
 class Basic_MCTS:
 	def __init__(self, existing_rle=False, game = None, level = None, partitionWeights=[1,0,1], waypoint=None, rleCreateFunc=False, obsType = OBSERVATION_GLOBAL, decay_factor=.95, num_workers=1):
 		if not existing_rle and not rleCreateFunc:
-			print "You must pass either an existing rle or an rleCreateFunc"
+			print("You must pass either an existing rle or an rleCreateFunc")
 			return
 		# assumption: not starting on terminal state
 		"""
@@ -92,7 +92,7 @@ class Basic_MCTS:
 		goal_loc = np.where(np.reshape(self.rle._getSensors(), self.outdim)==goal_code)
 		goal_loc = goal_loc[0][0], goal_loc[1][0]
 
-		if 'avatar' in self._obstypes.keys():
+		if 'avatar' in list(self._obstypes.keys()):
 			inverted_avatar_loc=self._obstypes['avatar'][0]
 			avatar_loc = (inverted_avatar_loc[1], inverted_avatar_loc[0])
 			self.avatar_code = np.reshape(self.rle._getSensors(), self.outdim)[avatar_loc[0]][avatar_loc[1]]
@@ -117,9 +117,9 @@ class Basic_MCTS:
 		self.rewardDict = {goal_loc:self.maxPseudoReward}
 		self.processed = [goal_loc]
 
-		print "maxPseudoreward", self.maxPseudoReward
-		print "rewardScaling", self.rewardScaling
-		print "partitionWeights", self.partitionWeights
+		print("maxPseudoreward", self.maxPseudoReward)
+		print("rewardScaling", self.rewardScaling)
+		print("partitionWeights", self.partitionWeights)
 		self.scanDomainForMovementOptions()
 		self.propagateRewards(goal_loc)
 
@@ -137,13 +137,13 @@ class Basic_MCTS:
 		try:
 			immovables = self.rle.immovables
 			# immovables = ['wall']
-			print "immovables", immovables
+			print("immovables", immovables)
 		except:
 			immovables = ['wall']
-			print "Using defaults as immovables", immovables
+			print("Using defaults as immovables", immovables)
 
 		for i in immovables:
-			if i in self._obstypes.keys():
+			if i in list(self._obstypes.keys()):
 				immovable_codes.append(2**(1+sorted(self._obstypes.keys())[::-1].index(i)))
 
 		actionDict = defaultdict(list)
@@ -176,7 +176,7 @@ class Basic_MCTS:
 		while len(self.rewardQueue)>0:
 			loc = self.rewardQueue.popleft()
 			if loc not in self.processed:
-				valid_neighbors = [n for n in self.neighborDict[loc] if n in self.rewardDict.keys()]
+				valid_neighbors = [n for n in self.neighborDict[loc] if n in list(self.rewardDict.keys())]
 				self.rewardDict[loc] = max([self.rewardDict[n] for n in valid_neighbors]) * self.pseudoRewardDecay
 				self.processed.append(loc)
 				for n in self.neighborDict[loc]:
@@ -186,10 +186,10 @@ class Basic_MCTS:
 
 	def startTrainingPhase(self, numTrainingCycles, step_horizon, VRLE, mark_solution=False, solution_limit=20):
 
-		print "defaultPolicy steps", step_horizon
+		print("defaultPolicy steps", step_horizon)
 		if mark_solution:
-			print "will stop once we find", solution_limit, "solutions"
-		print ""
+			print("will stop once we find", solution_limit, "solutions")
+		print("")
 		#track total iterations spent in treePolicy
 		tree_policy_iters, default_policy_iters = 0, 0
 		rewards = []
@@ -199,9 +199,9 @@ class Basic_MCTS:
 			Vrle = copy.deepcopy(VRLE)
 
 			if i%10==0 and len(rewards)>0:
-				print "Training cycle: %i"%i
-				print "avg. rewards for last group of 10", np.mean(rewards[-10:])
-				print "Partition weights", [self.partitionWeights[0], self.printexplorationweight, self.printheuristicweight]
+				print("Training cycle: %i"%i)
+				print("avg. rewards for last group of 10", np.mean(rewards[-10:]))
+				print("Partition weights", [self.partitionWeights[0], self.printexplorationweight, self.printheuristicweight])
 			try:
 				if defaultPolicySolveStep:
 					reward, v, iters = self.treePolicy(self.root, Vrle, step_horizon, \
@@ -210,7 +210,7 @@ class Basic_MCTS:
 					reward, v, iters = self.treePolicy(self.root, Vrle, step_horizon)
 
 			except TypeError:
-				print "typeError in startTrainingphase"
+				print("typeError in startTrainingphase")
 				embed()
 
 			tree_policy_iters += iters
@@ -218,7 +218,7 @@ class Basic_MCTS:
 				reward, dPiters = self.defaultPolicy(v, Vrle, step_horizon, domain_knowledge=True)
 				if reward >0 and not defaultPolicySolveStep:
 					defaultPolicySolveStep = i
-					print "found reward at step", defaultPolicySolveStep
+					print("found reward at step", defaultPolicySolveStep)
 
 
 				loc = np.where(np.reshape(v.state, self.outdim)==self.avatar_code)
@@ -233,11 +233,11 @@ class Basic_MCTS:
 				self.num_solutions_found += 1
 				# print "found solution"
 				if self.num_solutions_found > solution_limit:
-					print ""
-					print VRLE.show()
-					print "found solution", solution_limit, "times in ", i, "rounds."
+					print("")
+					print(VRLE.show())
+					print("found solution", solution_limit, "times in ", i, "rounds.")
 					actions = self.getBestActionsForPlayout((1,0,0))
-					print "greedy path:", actions
+					print("greedy path:", actions)
 					return self
 			rewards.append(reward)
 			self.backup(v, reward)
@@ -247,7 +247,7 @@ class Basic_MCTS:
 	def getBestActionsForPlayout(self, partitionWeights):
 		v = self.root
 		actions = []
-		while v and not v.terminal and len(v.children.keys())>0:
+		while v and not v.terminal and len(list(v.children.keys()))>0:
 			a, v = self.bestChild(v,partitionWeights, debug=False)
 			actions.append(a)
 		return actions
@@ -267,15 +267,15 @@ class Basic_MCTS:
 		cntr=0
 		v = self.root
 		if output:
-			print "current state"
+			print("current state")
 			# rle.show()
-			print np.reshape(v.state, rle.outdim)
+			print(np.reshape(v.state, rle.outdim))
 		actions, nodes = [], []
 		while v and not v.terminal and cntr<numActions:
 			# print v.children.iteritems()
 			if output:
-				print "options"
-				print [(ACTIONS[k],c.qVal) for k,c in v.children.iteritems()]
+				print("options")
+				print([(ACTIONS[k],c.qVal) for k,c in v.children.items()])
 			# a, v = self.bestChild(v,0)
 			a, v = self.bestChild(v,(1,0,0))
 
@@ -283,12 +283,12 @@ class Basic_MCTS:
 			nodes.append(v)
 			if output:
 				if v:
-					print "selected"
-					print ACTIONS[a]
-					print "resulted in"
+					print("selected")
+					print(ACTIONS[a])
+					print("resulted in")
 					# Can't use rle.show() here, as it's doing a replay, rather than using the actual RLE.
-					print np.reshape(v.state, rle.outdim)
-					print ""
+					print(np.reshape(v.state, rle.outdim))
+					print("")
 			cntr+=1
 		# if v.terminal:
 		# 	distance = 0
@@ -351,7 +351,7 @@ class Basic_MCTS:
 					return reward, v, iters
 				else:
 					if v.terminal!=terminal or not np.array_equal(v.state,rle._getSensors()):
-						print "in treePolicy"
+						print("in treePolicy")
 						embed()
 
 					# terminal = (not res['pcontinue']) or (rle._avatar is None)
@@ -363,7 +363,7 @@ class Basic_MCTS:
 					return reward, v, iters
 
 		return reward, v, iters
-		print "end of treepolicy"
+		print("end of treepolicy")
 		embed()
 
 	def expand(self, v, rle, domain_knowledge=False):
@@ -380,7 +380,7 @@ class Basic_MCTS:
 			action_choices = self.actions
 
 		for a in action_choices:
-			if a not in v.children.keys():
+			if a not in list(v.children.keys()):
 				expand_action = a
 				res = rle.step(a)
 				new_state = res["observation"]
@@ -431,13 +431,13 @@ class Basic_MCTS:
 	def maxChild(self, v):
 		tmp = np.where(np.reshape(v.state, self.rle.outdim)==1)
 		avatar_loc = tmp[0][0], tmp[1][0]
-		qVals = [v.children[a].qVal for a in v.children.keys()]
-		if len(qVals)>0 and avatar_loc in self.neighborDict.keys() and len(qVals)>=len(self.neighborDict[avatar_loc])-1: #  -1, since (0,0) is not an action.
+		qVals = [v.children[a].qVal for a in list(v.children.keys())]
+		if len(qVals)>0 and avatar_loc in list(self.neighborDict.keys()) and len(qVals)>=len(self.neighborDict[avatar_loc])-1: #  -1, since (0,0) is not an action.
 				maxVal = max(qVals)
-				choices = [(a,c) for (a,c) in v.children.items() if c.qVal==maxVal]
-				for (a,c) in v.children.items():
-					print a, c.qVal
-				print ""
+				choices = [(a,c) for (a,c) in list(v.children.items()) if c.qVal==maxVal]
+				for (a,c) in list(v.children.items()):
+					print(a, c.qVal)
+				print("")
 				# for (a,c) in choices:
 				# 	print a, c.qVal
 				# 	print np.reshape(c.state, self.rle.outdim)
@@ -475,7 +475,7 @@ class Basic_MCTS:
 			self.printexplorationweight = exploration_coefficient
 			# print "heuristic coefficient is now", heuristic_coefficient
 
-		for a,c in v.children.items():
+		for a,c in list(v.children.items()):
 			if v.equals(c):
 				continue
 			elif c.visitCount == 0:
@@ -511,7 +511,7 @@ class Basic_MCTS:
 
 		# print ""
 		# print np.reshape(v.state, self.outdim)
-		for a,c in v.children.items():
+		for a,c in list(v.children.items()):
 			if v.equals(c):
 				funcVal = -float('inf')
 			elif c.visitCount == 0:
@@ -583,7 +583,7 @@ class Basic_MCTS:
 				bestAction = a
 				bestChild = c
 		if bestChild == None:	## Tiebreaker
-			bestAction = random.choice(v.children.keys())
+			bestAction = random.choice(list(v.children.keys()))
 			bestChild = v.children[bestAction]
 
 		return bestAction, bestChild
@@ -606,7 +606,7 @@ class Basic_MCTS:
 
 			iters += 1
 			
-			if domain_knowledge and avatar_loc in self.actionDict.keys():
+			if domain_knowledge and avatar_loc in list(self.actionDict.keys()):
 				sample = random.choice(self.actionDict[avatar_loc])
 			else:
 				sample = random.choice([(-1,0), (1,0), (0,-1), (0,1)])
@@ -710,12 +710,12 @@ def translateEvents(events, all_objects):
 		elif len(event)==2:
 			outlist.append((event[0], getObjectColor(event[1])))
 	if len(outlist)>0:
-		print outlist
+		print(outlist)
 	return outlist
 
 
 def observe(rle, obsSteps):
-	print "observing"
+	print("observing")
 	for i in range(obsSteps):
 		spriteInduction(rle._game, step=1)
 		spriteInduction(rle._game, step=2)
@@ -747,8 +747,8 @@ def getToSubgoal(rle, vrle, subgoal, all_objects, finalEventList, verbose=True,
 	## TODO: this will be problematic when new objects appear, if you don't update it.
 	# all_objects = rle._game.getObjects()
 
-	print ""
-	print "object goal is", colorDict[str(subgoal.color)], rle._rect2pos(subgoal.rect)
+	print("")
+	print("object goal is", colorDict[str(subgoal.color)], rle._rect2pos(subgoal.rect))
 	# actions_executed = []
 	states_encountered = []
 	while not terminal and not goal_achieved:
@@ -774,7 +774,7 @@ def getToSubgoal(rle, vrle, subgoal, all_objects, finalEventList, verbose=True,
 
 				effects = translateEvents(res['effectList'], all_objects) ##TODO: this gets object colors, not IDs.
 				
-				print ACTIONS[actions[i]]
+				print(ACTIONS[actions[i]])
 				rle.show()
 
 				# if symbolDict:
@@ -802,7 +802,7 @@ def getToSubgoal(rle, vrle, subgoal, all_objects, finalEventList, verbose=True,
 							rle._game.collision_objects.add(effect[2])
 
 					if colorDict[str(subgoal.color)] in [item for sublist in effects for item in sublist]:
-						print "reached subgoal"
+						print("reached subgoal")
 						goal_achieved = True
 						if subgoal.name in rle._game.unknown_objects:
 							rle._game.unknown_objects.remove(subgoal.name)
@@ -860,9 +860,9 @@ def getToSubgoal(rle, vrle, subgoal, all_objects, finalEventList, verbose=True,
 				spriteInduction(rle._game, step=3)
 		if terminal:
 			if rle._isDone()[1]:
-				print "game won"
+				print("game won")
 			else:
-				print "Agent died."
+				print("Agent died.")
 	return rle, hypotheses, finalEventList, candidate_new_colors, states_encountered
 
 
@@ -871,7 +871,7 @@ def planActLoop(rleCreateFunc, filename, max_actions_per_plan, planning_steps, d
 	rle = rleCreateFunc(OBSERVATION_GLOBAL)
 	game, level = defInputGame(filename)
 	outdim = rle.outdim
-	print rle.show()
+	print(rle.show())
 	
 	terminal = rle._isDone()[0]
 	
@@ -892,11 +892,11 @@ def planActLoop(rleCreateFunc, filename, max_actions_per_plan, planning_steps, d
 
 		for j in range(min(len(actions), max_actions_per_plan)):
 			if actions[j] is not None and not terminal:
-				print ACTIONS[actions[j]]
+				print(ACTIONS[actions[j]])
 				res = rle.step(actions[j])
 				new_state = res["observation"]
 				terminal = not res['pcontinue']
-				print rle.show()
+				print(rle.show())
 				finalStates.append(rle._game.getFullState())
 
 		i+=1
@@ -912,7 +912,7 @@ def planUntilSolved(rleCreateFunc, filename, defaultPolicyMaxSteps, waypoint=Non
 	rle = rleCreateFunc(OBSERVATION_GLOBAL)
 	game, level = defInputGame(filename)
 	outdim = rle.outdim
-	print rle.show()
+	print(rle.show())
 	
 	terminal = rle._isDone()[0]
 	
@@ -922,7 +922,7 @@ def planUntilSolved(rleCreateFunc, filename, defaultPolicyMaxSteps, waypoint=Non
 
 	mcts = Basic_MCTS(existing_rle=rle, game=game, level=level, partitionWeights=[2,1,0], waypoint = waypoint)
 	mcts.startTrainingPhase(10000, defaultPolicyMaxSteps, rle, mark_solution=True, solution_limit=500)
-	print "ended trainingphase"
+	print("ended trainingphase")
 	return mcts
 
 	# while not terminal:

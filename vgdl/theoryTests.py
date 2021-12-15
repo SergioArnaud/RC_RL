@@ -1,7 +1,7 @@
-from theory_template import *
-from rlenvironmentnonstatic import defInputGame, createRLInputGame, createRLInputGameFromStrings
-from metaplanner import observe
-from ontology import *
+from .theory_template import *
+from .rlenvironmentnonstatic import defInputGame, createRLInputGame, createRLInputGameFromStrings
+from .metaplanner import observe
+from .ontology import *
 if __name__ == "__main__":
 
 	filename = "examples.gridphysics.simpleGame_preconditions"
@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
 	hypotheses = list(gameObject.runInduction(gameObject.spriteInductionResult, trace, 20, verbose=False)) ##if you resample or run sprite induction, this 
 
-	print "found", len(hypotheses), "hypotheses"
+	print("found", len(hypotheses), "hypotheses")
 
 	embed()
 

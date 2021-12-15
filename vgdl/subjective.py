@@ -10,9 +10,9 @@ Optional: small cheat screen gives the global view.
 
 import pygame
 
-from ontology import DARKGRAY, BASEDIRS, LIGHTGRAY, RED, LIGHTBLUE
-from tools import squarePoints
-from interfaces import GameEnvironment
+from .ontology import DARKGRAY, BASEDIRS, LIGHTGRAY, RED, LIGHTBLUE
+from .tools import squarePoints
+from .interfaces import GameEnvironment
 
 backscale = 0.4
 midscale = 0.65
@@ -147,9 +147,9 @@ class SubjectiveSceen(object):
         
     def reset(self):
         self.screen.blit(self.background, (0,0))        
-        for ps in wallLocations.values():
+        for ps in list(wallLocations.values()):
             self._drawPolygon(ps, DARKGRAY) 
-        for ps in floorLocations.values():
+        for ps in list(floorLocations.values()):
             self._drawPolygon(ps, LIGHTGRAY) 
         pygame.display.flip()
         
@@ -206,7 +206,7 @@ class SubjectiveGame(GameEnvironment):
     def _drawState(self):
         self.screen.reset()
         for iswall, fid, pos in self._nearTileIncrements():
-            for oname, ps in self._obstypes.items():
+            for oname, ps in list(self._obstypes.items()):
                 b = (oname in blocky)
                 col = self._obscols[oname]
                 if pos in ps:
@@ -223,7 +223,7 @@ class SubjectiveGame(GameEnvironment):
         
 
 def test1():
-    from ontology import GREEN, ORANGE, WHITE
+    from .ontology import GREEN, ORANGE, WHITE
     s = SubjectiveSceen()
     s._initScreen()
     s._colorWall(3, RED)
@@ -256,7 +256,7 @@ def test1():
     
 def test2():
     from examples.gridphysics.mazes import polarmaze_game, maze_level_1
-    from core import VGDLParser
+    from .core import VGDLParser
     game_str, map_str = polarmaze_game, maze_level_1
     g = VGDLParser().parseGame(game_str)
     g.buildLevel(map_str)    
@@ -270,10 +270,10 @@ def test2():
 def test3():
     from examples.gridphysics.mazes import polarmaze_game
     from examples.gridphysics.mazes.simple import maze_level_1b
-    from core import VGDLParser
+    from .core import VGDLParser
     from pybrain.rl.experiments.episodic import EpisodicExperiment
-    from interfaces import GameTask
-    from agents import InteractiveAgent, UserTiredException    
+    from .interfaces import GameTask
+    from .agents import InteractiveAgent, UserTiredException    
     game_str, map_str = polarmaze_game, maze_level_1b
     g = VGDLParser().parseGame(game_str)
     g.buildLevel(map_str)    
@@ -286,7 +286,7 @@ def test3():
         exper.doEpisodes(1)
     except UserTiredException:
         pass
-    print senv._allEvents
+    print(senv._allEvents)
     
     
 if  __name__ == "__main__":   

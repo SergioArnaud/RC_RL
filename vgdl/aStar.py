@@ -1,10 +1,10 @@
 import numpy as np
 from numpy import zeros
 import pygame    
-from ontology import BASEDIRS
-from core import VGDLSprite, colorDict, sys
-from stateobsnonstatic import StateObsHandlerNonStatic 
-from rlenvironmentnonstatic import *
+from .ontology import BASEDIRS
+from .core import VGDLSprite, colorDict, sys
+from .stateobsnonstatic import StateObsHandlerNonStatic 
+from .rlenvironmentnonstatic import *
 import argparse
 import random
 from IPython import embed
@@ -14,13 +14,13 @@ from collections import defaultdict, deque
 import time
 import copy
 from threading import Lock
-from Queue import Queue
+from queue import Queue
 import multiprocessing
-from ontology import Immovable, Passive, Resource, ResourcePack, RandomNPC, Chaser, AStarChaser, OrientedSprite, Missile
-from ontology import initializeDistribution, updateDistribution, updateOptions, sampleFromDistribution, spriteInduction, selectObjectGoal
-from theory_template import TimeStep, Precondition, InteractionRule, TerminationRule, TimeoutRule, SpriteCounterRule, MultiSpriteCounterRule, \
+from .ontology import Immovable, Passive, Resource, ResourcePack, RandomNPC, Chaser, AStarChaser, OrientedSprite, Missile
+from .ontology import initializeDistribution, updateDistribution, updateOptions, sampleFromDistribution, spriteInduction, selectObjectGoal
+from .theory_template import TimeStep, Precondition, InteractionRule, TerminationRule, TimeoutRule, SpriteCounterRule, MultiSpriteCounterRule, \
 generateSymbolDict, ruleCluster, Theory, Game, writeTheoryToTxt, generateTheoryFromGame
-from rlenvironmentnonstatic import createRLInputGame
+from .rlenvironmentnonstatic import createRLInputGame
 import curses
 
 #A hack to display things to the terminal conveniently.
@@ -66,13 +66,13 @@ class AStar:
 		try:
 			immovables = self.rle.immovables
 			# immovables = ['wall', 'poison']
-			print "immovables", immovables
+			print("immovables", immovables)
 		except:
 			immovables = ['wall', 'poison']
-			print "Using defaults as immovables", immovables
+			print("Using defaults as immovables", immovables)
 
 		for i in immovables:
-			if i in self.rle._obstypes.keys():
+			if i in list(self.rle._obstypes.keys()):
 				immovable_codes.append(2**(1+sorted(self.rle._obstypes.keys())[::-1].index(i)))
 
 		actionDict = defaultdict(list)
@@ -107,7 +107,7 @@ class AStar:
 		while len(rewardQueue)>0:
 			loc = rewardQueue.popleft()
 			if loc not in processed:
-				valid_neighbors = [n for n in self.neighborDict[loc] if n in self.rewardDict.keys()]
+				valid_neighbors = [n for n in self.neighborDict[loc] if n in list(self.rewardDict.keys())]
 				self.rewardDict[loc] = max([self.rewardDict[n] for n in valid_neighbors]) * self.pseudoRewardDecay
 				processed.append(loc)
 				for n in self.neighborDict[loc]:
@@ -134,7 +134,7 @@ class AStar:
 					q.append((neighbor, path + [neighbor]))
 
 		if node != goal_loc:
-			print "didn't find path to goal in getSubgoals (in getPathToGoal)"
+			print("didn't find path to goal in getSubgoals (in getPathToGoal)")
 			return False
 			# embed()
 			# raise Exception("Didn't find a path to the goal location.")
@@ -145,13 +145,13 @@ class AStar:
 		## find location of goal, add to rewardDict.
 		## also add neighbors of goal rewardQueue.
 		##TODO: update this if goal moves!!
-		if "goal" not in self.rle._obstypes.keys():
-			print "no goal to get subgoals to"
+		if "goal" not in list(self.rle._obstypes.keys()):
+			print("no goal to get subgoals to")
 			return []
 		goal_code = 2**(1+sorted(self.rle._obstypes.keys())[::-1].index("goal"))
 		killerObjectCodes = []
 		for o in self.rle.killerObjects:
-			if o in self.rle._obstypes.keys():
+			if o in list(self.rle._obstypes.keys()):
 				killerObjectCodes.append(2**(1+sorted(self.rle._obstypes.keys())[::-1].index(o)))
 		board = np.reshape(self.rle._getSensors(), self.rle.outdim)
 		goal_loc = np.where(board==goal_code)
@@ -192,13 +192,13 @@ class AStar:
 								# print "found altered path", path[subgoal_index+i]
 								break
 						except:
-							print "indices didn't work out in looking for different path"
+							print("indices didn't work out in looking for different path")
 				# self.subgoals.append(path[subgoal_index])
 		
 		return self.subgoals
 	def findObjectInRLE(self, rle, objName):
-		if objName not in rle._obstypes.keys():
-			print objName, "not in rle."
+		if objName not in list(rle._obstypes.keys()):
+			print(objName, "not in rle.")
 			return None
 		objCode = 2**(1+sorted(self.rle._obstypes.keys())[::-1].index(objName))
 		objLoc = np.where(np.reshape(self.rle._getSensors(), self.rle.outdim)==objCode)
@@ -291,7 +291,7 @@ class AStar:
 				try:
 					h = self.manhattanDistance(avatarLoc, goalLoc)
 				except:
-					print "couldn't find h"
+					print("couldn't find h")
 					embed()
 				win = False
 			else:
@@ -314,7 +314,7 @@ class AStar:
 		try:
 			node = Node(rle, s, None, (0,0), 0., self.manhattanDistance(avatarLoc, goalLoc), terminal, win)
 		except:
-			print "couldn't make node becuase of manhattan distance"
+			print("couldn't make node becuase of manhattan distance")
 			embed()
 		self.open.add(node)
 
@@ -324,7 +324,7 @@ class AStar:
 			# print current.f(), len(self.open), [o.f() for o in self.open]
 			bestChildSum += time.time() - t1
 			if current.terminal and current.win:
-				print 'bestChildSum, makeneighborsum, loopsum', bestChildSum, makeneighborSum, loopSum
+				print('bestChildSum, makeneighborsum, loopsum', bestChildSum, makeneighborSum, loopSum)
 				return self.constructPath(current)
 			else:
 				self.open.remove(current)
@@ -340,7 +340,7 @@ class AStar:
 						else:
 							neighbors = [n for n in self.open if n.state==neighbor.state]
 							if len(neighbors)>1:
-								print "found more than one neighbor"
+								print("found more than one neighbor")
 								embed()
 							openNeighbor = neighbors[0]
 
@@ -352,7 +352,7 @@ class AStar:
 			loopSum += time.time() - t1
 			# print i
 			i +=1
-		print 'bestChildSum, makeneighborsum, loopsum', bestChildSum, makeneighborSum, loopSum
+		print('bestChildSum, makeneighborsum, loopsum', bestChildSum, makeneighborSum, loopSum)
 		return False
 
 	def constructPath(self, node):
@@ -366,7 +366,7 @@ class AStar:
 
 	def playPath(self, path):
 		for p in path:
-			print p.rle.show()
+			print(p.rle.show())
 
 if __name__ == "__main__":
 	
@@ -374,14 +374,14 @@ if __name__ == "__main__":
 	# gameFilename = "examples.gridphysics.simpleGame_teleport"
 	# gameFilename = "examples.gridphysics.simpleGame_many_poisons_huge"
 	gameFilename = "examples.gridphysics.movers2b"
-	print ""
-	print "initializing AStar on game", gameFilename
+	print("")
+	print("initializing AStar on game", gameFilename)
 	gameString, levelString = defInputGame(gameFilename, randomize=True)
 	rleCreateFunc = lambda: createRLInputGame(gameFilename)
 	rle = rleCreateFunc()
-	print rle.show()
+	print(rle.show())
 	agent = AStar(rle, gameString, levelString)
 	path, actions = agent.search()
-	print "found path"
+	print("found path")
 
 	embed()

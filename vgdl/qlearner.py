@@ -1,4 +1,4 @@
-from planner import *
+from .planner import *
 
 class QLearner(Planner):
 	def __init__(self, rle, gameString, levelString, gameFilename, display, episodes=100, memory=None, \
@@ -29,7 +29,7 @@ class QLearner(Planner):
 		elif policy == 'greedy':
 			bestQVal, bestA, QValsAreAllEqual = self.bestSA(s, partitionWeights = [1,0,0], domainKnowledge = True)
 			if printout:
-				print bestQVal
+				print(bestQVal)
 			if QValsAreAllEqual:
 				return None
 			else:
@@ -79,10 +79,10 @@ class QLearner(Planner):
 
 		# print self.rle.show()
 		if debug:
-			print "debugging bestSA"
+			print("debugging bestSA")
 			embed()
 		for a in actions:
-			if (s,a) not in self.QVals.keys():
+			if (s,a) not in list(self.QVals.keys()):
 				self.QVals[(s,a)] = 0.
 			sumQVal += abs(self.QVals[(s,a)])
 			sumPseudoReward += self.getPseudoReward(s, a)
@@ -123,8 +123,8 @@ class QLearner(Planner):
 				bestQVal = self.QVals[(s,a)]
 				QValsAreAllEqual = True
 			except:
-				print "actions array is empty. in bestSA"
-				print np.reshape(np.fromstring(s,dtype=float),self.rle.outdim)
+				print("actions array is empty. in bestSA")
+				print(np.reshape(np.fromstring(s,dtype=float),self.rle.outdim))
 				embed()
 
 		# embed()
@@ -136,7 +136,7 @@ class QLearner(Planner):
 		try:
 			self.QVals[(s,a)] = self.QVals[(s,a)] + self.alpha * (r + self.gamma*bestQVal - self.QVals[(s,a)])
 		except:
-			print "didn't find qvals[s,a]"
+			print("didn't find qvals[s,a]")
 			embed()
 
 	def runEpisode(self):
@@ -157,7 +157,7 @@ class QLearner(Planner):
 
 			## UNCOMMENT HERE IF YOU WANT TO WATCH Q-learner learning.
 			if self.display:
-				print rle.show()
+				print(rle.show())
 
 			## lower epsilon once you've found winning states.
 			if self.anneal and rle._isDone()[1]:
@@ -188,7 +188,7 @@ class QLearner(Planner):
 			if i%10==0:
 				s = self.rle._getSensors().tostring()
 				a = self.selectAction(s, policy='greedy', partitionWeights = self.partitionWeights)
-				print i, self.QVals[(s,a)]
+				print(i, self.QVals[(s,a)])
 				if satisfice: ## see if values have propagated to start state; if so, return.
 					actions = self.getBestActionsForPlayout()
 					if len(actions)>0:
@@ -198,8 +198,8 @@ class QLearner(Planner):
 				self.getBestActionsForPlayout(False, True)
 		time_elapsed = time.time()-t1
 		self.printSummary()
-		print "Time to solution: {}".format(time_elapsed)
-		print ""
+		print("Time to solution: {}".format(time_elapsed))
+		print("")
 		return i
 
 	def getBestActionsForPlayout(self, aggressive=False, showActions = False):
@@ -223,26 +223,26 @@ class QLearner(Planner):
 			actions.append(a)
 			res = rle.step(a)
 			if showActions:
-				print rle.show()
+				print(rle.show())
 			terminal = rle._isDone()[0]
 			s = res['observation'].tostring()
 		return actions
 
 	def backwardsPlayback(self):
-		lst = [(k,v) for k,v in self.QVals.iteritems()]
+		lst = [(k,v) for k,v in self.QVals.items()]
 		slist = sorted(lst, key=lambda x:x[1])
 		slist.reverse()
 		for l in slist:
 			if l[1]>0:
-				print np.reshape(np.fromstring(l[0][0],dtype=float),self.rle.outdim)
-				print l[1]
+				print(np.reshape(np.fromstring(l[0][0],dtype=float),self.rle.outdim))
+				print(l[1])
 
 	def printSummary(self):
-		print ""
-		print "Game: {}".format(self.gameFilename)
-		print "Immovables: {}".format(self.immovables)
-		print "Enemies: {}".format(self.killerObjects)
-		print "Parameters: Epsilon: {}. Gamma: {}. PartitionWeights: {}".format(self.epsilon, self.gamma, self.partitionWeights)
+		print("")
+		print("Game: {}".format(self.gameFilename))
+		print("Immovables: {}".format(self.immovables))
+		print("Enemies: {}".format(self.killerObjects))
+		print("Parameters: Epsilon: {}. Gamma: {}. PartitionWeights: {}".format(self.epsilon, self.gamma, self.partitionWeights))
 		return
 if __name__ == "__main__":
 	

@@ -18,7 +18,7 @@ def featurePlot(size, states, fMap, plotdirections=False):
     
     Black corresponds to non-state positions. """
     
-    from ontology import LEFT, RIGHT, UP, DOWN
+    from .ontology import LEFT, RIGHT, UP, DOWN
     if len(states[0]) > 3:
         polar = True
         M = ones((size[0] * 2, size[1] * 2))

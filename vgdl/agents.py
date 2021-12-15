@@ -13,7 +13,7 @@ from pybrain.rl.agents.agent import Agent
 from pybrain.rl.learners.modelbased import policyIteration
 from pybrain.utilities import drawIndex
 
-from ontology import BASEDIRS
+from .ontology import BASEDIRS
 
 class UserTiredException(Exception):
     """ Raised when the player is fed up of the game. """
@@ -25,7 +25,7 @@ class InteractiveAgent(Agent):
     def getAction(self):
         from pygame.locals import K_LEFT, K_RIGHT, K_UP, K_DOWN
         from pygame.locals import K_ESCAPE, QUIT        
-        from ontology import RIGHT, LEFT, UP, DOWN
+        from .ontology import RIGHT, LEFT, UP, DOWN
         pygame.event.pump()
         keystate = pygame.key.get_pressed()    
         res = None
@@ -53,7 +53,7 @@ class PolicyDrivenAgent(Agent):
     def buildOptimal(game_env, discountFactor=0.99):
         """ Given a game, find the optimal (state-based) policy and 
         return an agent that is playing accordingly. """
-        from mdpmap import MDPconverter
+        from .mdpmap import MDPconverter
         C = MDPconverter(env=game_env)
         Ts, R, _ = C.convert()
         policy, _ = policyIteration(Ts, R, discountFactor=discountFactor)

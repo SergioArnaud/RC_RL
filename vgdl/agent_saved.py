@@ -1,9 +1,9 @@
 from basic_mcts_domain import *
-from util import *
-from core import colorDict
-from ontology import Immovable, Passive, Resource, ResourcePack, RandomNPC, Chaser, AStarChaser, OrientedSprite, Missile
-from ontology import initializeDistribution, updateDistribution, updateOptions, sampleFromDistribution, spriteInduction, selectSubgoal
-from theory_template import TimeStep, Precondition, InteractionRule, TerminationRule, TimeoutRule, SpriteCounterRule, MultiSpriteCounterRule, ruleCluster, Theory, Game
+from .util import *
+from .core import colorDict
+from .ontology import Immovable, Passive, Resource, ResourcePack, RandomNPC, Chaser, AStarChaser, OrientedSprite, Missile
+from .ontology import initializeDistribution, updateDistribution, updateOptions, sampleFromDistribution, spriteInduction, selectSubgoal
+from .theory_template import TimeStep, Precondition, InteractionRule, TerminationRule, TimeoutRule, SpriteCounterRule, MultiSpriteCounterRule, ruleCluster, Theory, Game
 
 '''
 ## helpful functions or access methods:
@@ -25,7 +25,7 @@ if __name__ == "__main__":
 	## Initialize rle the agent behaves in.
 	rleCreateFunc = createRLSimpleGame4
 	rle = rleCreateFunc(OBSERVATION_GLOBAL)
-	rle._game.unknown_objects = rle._game.sprite_groups.keys()
+	rle._game.unknown_objects = list(rle._game.sprite_groups.keys())
 	rle._game.unknown_objects.remove('avatar') 		## For now we're asumming agent knows self.
 	rle.agentStatePrev = {}
 	all_objects = rle._game.getObjects()
@@ -35,9 +35,9 @@ if __name__ == "__main__":
 
 	## When you restart episodes, reset the rle.agentStatePrev. Maybe some other things, too.
 	
-	print ""
-	print ""
-	print np.reshape(rle._getSensors(), rle.outdim)
+	print("")
+	print("")
+	print(np.reshape(rle._getSensors(), rle.outdim))
 	sample = sampleFromDistribution(rle._game.spriteDistribution, all_objects)
 	g = Game(spriteInductionResult=sample)
 	## Temporary hack -- change as soon as we can write theory files.
@@ -56,9 +56,9 @@ if __name__ == "__main__":
 
 		## Plan to achieve that goal
 		rle, hypotheses = getToSubgoal(rle, Vrle, subgoal, all_objects, finalEventList, sample)
-		print "in agent loop"
-		from rlenvironmentnonstatic import *
-		from theory_template import writeTheoryToTxt
+		print("in agent loop")
+		from .rlenvironmentnonstatic import *
+		from .theory_template import writeTheoryToTxt
 		# rle2= createRLtextTheory(obsType=OBSERVATION_GLOBAL)
 		
 
@@ -73,7 +73,7 @@ if __name__ == "__main__":
 		embed()
 		## Select hypothesis according to whichever method, make new VRLE
 		## theory_to_world(hypotheses[0]) ## should write new .py file
-		print ""
+		print("")
 
 	# embed()
 

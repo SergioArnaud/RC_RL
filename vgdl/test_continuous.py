@@ -1,8 +1,8 @@
-from theory_template import Game, TimeStep
-from sampleVGDLString import *
-from taxonomy import *
-from class_theory_template import *
-from induction import runInduction_DFS
+from .theory_template import Game, TimeStep
+from .sampleVGDLString import *
+from .taxonomy import *
+from .class_theory_template import *
+from .induction import runInduction_DFS
 from IPython import embed
 import time, ast
 
@@ -29,16 +29,16 @@ def testTrace(vgdlFile, gameOutputFile, expectedHypotheses, name, maxNumTheories
 	end = time.time()
 
 	# Useful for quick view of test results
-	print "########################"
-	print "Checking {}...".format(name)
-	print "TIME TO RUN: {}".format(end-start)
-	print "Expected number of hypotheses {} = actual number of hypotheses {}? {}".format(expectedHypotheses, len(hypotheses), expectedHypotheses==len(hypotheses))
+	print("########################")
+	print("Checking {}...".format(name))
+	print("TIME TO RUN: {}".format(end-start))
+	print("Expected number of hypotheses {} = actual number of hypotheses {}? {}".format(expectedHypotheses, len(hypotheses), expectedHypotheses==len(hypotheses)))
 	
 	if expectedHypotheses==len(hypotheses): 	# TODO: Are there other parameters which we want to check?
-		print ">>>> PASS!"
+		print(">>>> PASS!")
 	else:
-		print ">>>> FAIL :("
-	print "\n########################\n\n\n\n\n\n\n"
+		print(">>>> FAIL :(")
+	print("\n########################\n\n\n\n\n\n\n")
 
 	return hypotheses
 

@@ -1,10 +1,10 @@
 import numpy as np
 from numpy import zeros
 import pygame    
-from ontology import BASEDIRS
-from core import VGDLSprite, colorDict
-from stateobsnonstatic import StateObsHandlerNonStatic 
-from rlenvironmentnonstatic import *
+from .ontology import BASEDIRS
+from .core import VGDLSprite, colorDict
+from .stateobsnonstatic import StateObsHandlerNonStatic 
+from .rlenvironmentnonstatic import *
 import argparse
 import random
 from IPython import embed
@@ -14,14 +14,14 @@ from collections import defaultdict, deque
 import time
 import copy
 from threading import Lock
-from Queue import Queue
+from queue import Queue
 import multiprocessing
-from qlearner import *
-from ontology import Immovable, Passive, Resource, ResourcePack, RandomNPC, Chaser, AStarChaser, OrientedSprite, Missile
-from ontology import initializeDistribution, updateDistribution, updateOptions, sampleFromDistribution, spriteInduction, selectObjectGoal
-from theory_template import TimeStep, Precondition, InteractionRule, TerminationRule, TimeoutRule, SpriteCounterRule, MultiSpriteCounterRule, \
+from .qlearner import *
+from .ontology import Immovable, Passive, Resource, ResourcePack, RandomNPC, Chaser, AStarChaser, OrientedSprite, Missile
+from .ontology import initializeDistribution, updateDistribution, updateOptions, sampleFromDistribution, spriteInduction, selectObjectGoal
+from .theory_template import TimeStep, Precondition, InteractionRule, TerminationRule, TimeoutRule, SpriteCounterRule, MultiSpriteCounterRule, \
 generateSymbolDict, ruleCluster, Theory, Game, writeTheoryToTxt, generateTheoryFromGame
-from rlenvironmentnonstatic import createRLInputGame
+from .rlenvironmentnonstatic import createRLInputGame
 
 #A hack to display things to the terminal conveniently.
 np.core.arrayprint._line_width=250
@@ -45,7 +45,7 @@ class Basic_MCTS:
 	def __init__(self, existing_rle=False, game = None, level = None, partitionWeights=[1,0,1],\
 		         rleCreateFunc=False, obsType = OBSERVATION_GLOBAL, decay_factor=.8, num_workers=1):
 		if not existing_rle and not rleCreateFunc:
-			print "You must pass either an existing rle or an rleCreateFunc"
+			print("You must pass either an existing rle or an rleCreateFunc")
 			return
 		# assumption: not starting on terminal state
 		"""
@@ -102,7 +102,7 @@ class Basic_MCTS:
 		goal_loc = np.where(np.reshape(self.rle._getSensors(), self.outdim)==goal_code)
 		goal_loc = goal_loc[0][0], goal_loc[1][0] #(y,x)
 
-		if 'avatar' in self._obstypes.keys():
+		if 'avatar' in list(self._obstypes.keys()):
 			inverted_avatar_loc=self._obstypes['avatar'][0]
 			avatar_loc = (inverted_avatar_loc[1], inverted_avatar_loc[0])
 			self.avatar_code = np.reshape(self.rle._getSensors(), self.outdim)[avatar_loc[0]][avatar_loc[1]]
@@ -144,7 +144,7 @@ class Basic_MCTS:
 		killerObjectCodes = []
 		if hasattr(self.rle, 'killerObjects'):
 			for o in self.rle.killerObjects:
-				if o in self.rle._obstypes.keys():
+				if o in list(self.rle._obstypes.keys()):
 					killerObjectCodes.append(2**(1+sorted(self.rle._obstypes.keys())[::-1].index(o)))
 		board = np.reshape(self.rle._getSensors(), self.rle.outdim)
 		goal_loc = np.where(board==goal_code)
@@ -179,7 +179,7 @@ class Basic_MCTS:
 								# print "found altered path", path[subgoal_index+i]
 								break
 						except:
-							print "indices didn't work out in looking for different path"
+							print("indices didn't work out in looking for different path")
 
 				# self.subgoals.append(path[subgoal_index])
 		return self.subgoals
@@ -195,10 +195,10 @@ class Basic_MCTS:
 			# print "immovables", immovables
 		except:
 			immovables = ['wall', 'poison']
-			print "Using defaults as immovables", immovables
+			print("Using defaults as immovables", immovables)
 
 		for i in immovables:
-			if i in self._obstypes.keys():
+			if i in list(self._obstypes.keys()):
 				immovable_codes.append(2**(1+sorted(self._obstypes.keys())[::-1].index(i)))
 
 		actionDict = defaultdict(list)
@@ -231,7 +231,7 @@ class Basic_MCTS:
 		while len(self.rewardQueue)>0:
 			loc = self.rewardQueue.popleft()
 			if loc not in self.processed:
-				valid_neighbors = [n for n in self.neighborDict[loc] if n in self.rewardDict.keys()]
+				valid_neighbors = [n for n in self.neighborDict[loc] if n in list(self.rewardDict.keys())]
 				self.rewardDict[loc] = max([self.rewardDict[n] for n in valid_neighbors]) * self.pseudoRewardDecay
 				self.processed.append(loc)
 				for n in self.neighborDict[loc]:
@@ -275,8 +275,8 @@ class Basic_MCTS:
 			Vrle = copy.deepcopy(VRLE)
 
 			if i%100==0 and len(rewards)>0:
-				print "Training cycle: %i"%i
-				print "avg. rewards for last group of 100", np.mean(rewards[-100:])
+				print("Training cycle: %i"%i)
+				print("avg. rewards for last group of 100", np.mean(rewards[-100:]))
 
 			if defaultPolicySolveStep:
 				reward, v, iters = self.treePolicy(self.root, Vrle, step_horizon, \
@@ -312,7 +312,7 @@ class Basic_MCTS:
 	def getBestActionsForPlayout(self, partitionWeights, debug=False):
 		v = self.root
 		actions = []
-		while v and not v.terminal and len(v.children.keys())>0:
+		while v and not v.terminal and len(list(v.children.keys()))>0:
 			a, v = self.bestChild(v,partitionWeights, debug=debug)
 			actions.append(a)
 		return actions
@@ -332,24 +332,24 @@ class Basic_MCTS:
 		cntr=0
 		v = self.root
 		if output:
-			print "current state"
-			print np.reshape(v.state, rle.outdim)
+			print("current state")
+			print(np.reshape(v.state, rle.outdim))
 		actions, nodes = [], []
 		while v and not v.terminal and cntr<numActions:
 			if output:
-				print "options"
-				print [(ACTIONS[k],c.qVal) for k,c in v.children.iteritems()]
+				print("options")
+				print([(ACTIONS[k],c.qVal) for k,c in v.children.items()])
 			a, v = self.bestChild(v,(1,0,0))
 
 			actions.append(a)
 			nodes.append(v)
 			if output:
 				if v:
-					print "selected"
-					print ACTIONS[a]
-					print "resulted in"
-					print np.reshape(v.state, rle.outdim)
-					print ""
+					print("selected")
+					print(ACTIONS[a])
+					print("resulted in")
+					print(np.reshape(v.state, rle.outdim))
+					print("")
 			cntr+=1
 		# if v.terminal:
 		# 	distance = 0
@@ -387,11 +387,11 @@ class Basic_MCTS:
 
 				res = rle.step(a) ## TODO: you're getting the bestChild and taking bestAction, but in a stochastic game you will end up in
 									## a different state despite having taken the same action. Is this what you want?
-				print rle.show()
+				print(rle.show())
 				terminal = rle._isDone()[0]
 
 				if terminal != v.terminal or not np.array_equal(v.state, rle._getSensors()):
-					print "inconsistency in node and rle"
+					print("inconsistency in node and rle")
 					embed()
 				# terminal = (not res['pcontinue']) or (rle._avatar is None)
 				if terminal:
@@ -417,7 +417,7 @@ class Basic_MCTS:
 			action_choices = self.actions
 
 		for a in action_choices:
-			if a not in v.children.keys():
+			if a not in list(v.children.keys()):
 				expand_action = a
 				res = rle.step(a)
 				new_state = res["observation"]
@@ -442,13 +442,13 @@ class Basic_MCTS:
 	def maxChild(self, v):
 		tmp = np.where(np.reshape(v.state, self.outdim)==1)
 		avatar_loc = tmp[0][0], tmp[1][0]
-		qVals = [v.children[a].qVal for a in v.children.keys()]
-		if len(qVals)>0 and avatar_loc in self.neighborDict.keys() and len(qVals)>=len(self.neighborDict[avatar_loc])-1: #  -1, since (0,0) is not an action.
+		qVals = [v.children[a].qVal for a in list(v.children.keys())]
+		if len(qVals)>0 and avatar_loc in list(self.neighborDict.keys()) and len(qVals)>=len(self.neighborDict[avatar_loc])-1: #  -1, since (0,0) is not an action.
 				maxVal = max(qVals)
-				choices = [(a,c) for (a,c) in v.children.items() if c.qVal==maxVal]
-				for (a,c) in v.children.items():
-					print a, c.qVal
-				print ""
+				choices = [(a,c) for (a,c) in list(v.children.items()) if c.qVal==maxVal]
+				for (a,c) in list(v.children.items()):
+					print(a, c.qVal)
+				print("")
 				return random.choice(choices)
 		else:
 			return (None, None)
@@ -489,7 +489,7 @@ class Basic_MCTS:
 			self.printexplorationweight = exploration_coefficient
 			# print "heuristic coefficient is now", heuristic_coefficient
 
-		for a,c in v.children.items():
+		for a,c in list(v.children.items()):
 			if v.equals(c):
 				continue
 			elif c.visitCount == 0:
@@ -498,7 +498,7 @@ class Basic_MCTS:
 				if self.avatar_code not in [l%2 for l in c.state]: ##we're in a terminal losing state
 																	## Don't give pseudoreward
 					if not c.terminal:
-						print "terminal state but avatar not in c.state"
+						print("terminal state but avatar not in c.state")
 						embed()
 
 					# vLoc = np.where(np.reshape(v.state, self.outdim)%2==self.avatar_code)
@@ -528,15 +528,15 @@ class Basic_MCTS:
 						sumVisitCount += abs(math.sqrt(2*math.log(v.visitCount)/c.visitCount))
 						sumPseudoReward += abs(transform(loc))/c.visitCount
 					except TypeError:
-						print "loc is weird type"
+						print("loc is weird type")
 						embed()
 
 
 
 		# print ""
 		if debug:
-			print np.reshape(v.state, self.outdim)
-		for a,c in v.children.items():
+			print(np.reshape(v.state, self.outdim))
+		for a,c in list(v.children.items()):
 			if v.equals(c):
 				funcVal = -float('inf')
 			elif c.visitCount == 0:
@@ -591,18 +591,18 @@ class Basic_MCTS:
 					        + exploration_coefficient*math.sqrt(2*math.log(v.visitCount)/c.visitCount)/sumVisitCount \
 					        + heuristic_coefficient*(transform(loc)/c.visitCount)/sumPseudoReward	
 				if debug:
-					print a, funcVal
+					print(a, funcVal)
 
 			if funcVal > maxFuncVal:
 				maxFuncVal = funcVal
 				bestAction = a
 				bestChild = c
 		if bestChild == None:	## Tiebreaker
-			bestAction = random.choice(v.children.keys())
+			bestAction = random.choice(list(v.children.keys()))
 			bestChild = v.children[bestAction]
 
 		if debug:
-			print ""
+			print("")
 		return bestAction, bestChild
 
 	def defaultPolicy(self, v, rle, step_horizon, domain_knowledge=False):
@@ -623,7 +623,7 @@ class Basic_MCTS:
 
 			iters += 1
 			
-			if domain_knowledge and avatar_loc in self.actionDict.keys():
+			if domain_knowledge and avatar_loc in list(self.actionDict.keys()):
 				sample = random.choice(self.actionDict[avatar_loc])
 			else:
 				sample = random.choice([(-1,0), (1,0), (0,-1), (0,1)])
@@ -631,7 +631,7 @@ class Basic_MCTS:
 			a = sample
 
 			res = rle.step(a)
-			print rle.show()
+			print(rle.show())
 			new_state = res["observation"]
 			state = new_state
 			terminal = rle._isDone()[0]
@@ -639,7 +639,7 @@ class Basic_MCTS:
 				reward += g*self.rewardScaling
 			else:
 				reward += g*res['reward']
-			print reward			
+			print(reward)			
 			g *= self.decay_factor
 
 		return reward, iters
@@ -698,10 +698,10 @@ if __name__ == "__main__":
 	gameString, levelString = defInputGame(gameFilename, randomize=True)
 	rleCreateFunc = lambda: createRLInputGame(gameFilename)
 	rle = rleCreateFunc()
-	print rle.show()
+	print(rle.show())
 	# rle.immovables = ['wall', 'poison1', 'poison2']
-	print ""
-	print "Initializing learner. Playing", gameFilename
+	print("")
+	print("Initializing learner. Playing", gameFilename)
 	mcts=Basic_MCTS(existing_rle=rle, game=gameString, level=levelString, partitionWeights=[5,3,3])	# ql.getBestActionsForPlayout(False, True)
 	# for x in range(10):
 	# 	print '{0}\r'.format(x),
@@ -714,7 +714,7 @@ if __name__ == "__main__":
 	actions = mcts.getBestActionsForPlayout()
 	# ql.runEpisode()
 	t2 = time.time() - t1
-	print "done in {} seconds".format(t2)
+	print("done in {} seconds".format(t2))
 	# ql.learn(100, satisfice=False)
 
 	embed()

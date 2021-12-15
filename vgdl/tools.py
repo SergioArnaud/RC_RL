@@ -51,7 +51,7 @@ def triPoints(rect, orientation):
     return [(p[0], p[1]) for p in [p1, p2a, p2b]]
 
 def roundedPoints(rect):    
-    from ontology import BASEDIRS
+    from .ontology import BASEDIRS
     size = rect.size[0]
     assert rect.size[1]==size, "Assumes square shape."
     size = size*0.92
