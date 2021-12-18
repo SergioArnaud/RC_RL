@@ -56,7 +56,6 @@ protobuf==3.19.1
 ptyprocess==0.7.0
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
-PyBrain @ https://github.com/pybrain/pybrain/archive/0.3.3.zip
 pygame==2.1.0
 pyglet==1.5.21
 Pygments==2.10.0
