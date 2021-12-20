@@ -209,7 +209,7 @@ class DopamineVGDLEnv(object):
                             self.game_name_short,
                             self.level_switch,
                         ),
-                        "ab",
+                        "a",
                     ) as file:
                         writer = csv.writer(file)
                         writer.writerow(episode_results)
