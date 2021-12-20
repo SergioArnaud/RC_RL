@@ -5,5 +5,5 @@
 	path = EfficientZero
 	url = https://github.com/SergioArnaud/EfficientZero.git
 [submodule "vgdl/pybrain-python3"]
-	path = vgdl/pybrain-python3
+	path = vgdl/pybrain
 	url = https://github.com/SergioArnaud/pybrain-python3.git
