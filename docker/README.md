@@ -6,5 +6,5 @@ To build the image just run
 
 Currently the image is hosted on dockerhub.
 
-- https://hub.docker.com/repository/docker/sergioarnaud/rc_rl
+- https://hub.docker.com/r/sergioarnaud/rc_rl
 
