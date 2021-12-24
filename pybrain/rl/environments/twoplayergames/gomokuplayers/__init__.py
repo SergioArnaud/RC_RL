@@ -1,3 +1,0 @@
-from pybrain.rl.environments.twoplayergames.gomokuplayers.randomplayer import RandomGomokuPlayer
-from pybrain.rl.environments.twoplayergames.gomokuplayers.killing import KillingGomokuPlayer
-from pybrain.rl.environments.twoplayergames.gomokuplayers.moduledecision import ModuleDecidingPlayer
