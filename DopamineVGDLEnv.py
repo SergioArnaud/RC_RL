@@ -33,17 +33,20 @@ class DopamineVGDLEnv(object):
         self.experiment_outpath = "../experiments/{}/{}/{}".format(
             game_name, date, experiment_id
         )
-        if not os.path.exists(self.experiment_outpath):
-            os.makedirs(self.experiment_outpath)
+
+        os.makedirs(self.experiment_outpath, exist_ok=True)
+        os.makedirs(self.experiment_outpath + "/screens", exist_ok=True)
+        os.makedirs(self.experiment_outpath + "/object_positions", exist_ok=True)
+        os.makedirs(self.experiment_outpath + "/avatar_positions", exist_ok=True)
 
         # FOR RECORDING
         self.record_flag = 1  # record_flag
         # pdb.set_trace()
 
-        self.avatar_file_path = "{}/{}_avatar.p".format(
+        self.avatar_file_path = "{}/avatar_positions/{}_avatar".format(
             self.experiment_outpath, self.game_name_short
         )
-        self.objects_file_path = "{}/{}_objects.p".format(
+        self.objects_file_path = "{}/object_positions/{}_objects".format(
             self.experiment_outpath, self.game_name_short
         )
 
@@ -60,6 +63,23 @@ class DopamineVGDLEnv(object):
         self.episode_reward = 0
         self.event_dict = defaultdict(lambda: 0)
         self.recent_history = [0] * int(self.criteria.split("/")[1])
+
+        self.avatar_position_data = {
+            "game_info": (
+                self.Env.current_env._game.width,
+                self.Env.current_env._game.height,
+            ),
+            "data":[]
+        }
+
+        self.objects_position_data = {
+            "game_info": (
+                self.Env.current_env._game.width,
+                self.Env.current_env._game.height,
+            ),
+            "data": []
+        }
+        
 
         if self.record_flag:
             with open(
@@ -99,23 +119,23 @@ class DopamineVGDLEnv(object):
         self.Env.set_level(self.Env.lvl)
         self.steps = intended_steps
 
-
     def get_level(self):
         return self.Env.lvl
 
     def step(self, action):
         if self.steps >= 1000000:
             sys.exit()
+
         self.steps += 1
         self.episode_steps += 1
         self.append_gif()
-        if self.steps % 1000 == 0:
-            #self.save_gif()
+        if self.steps % 5000 == 0:
+            self.save_gif()
             self.screen_history = []
 
         self.reward, self.game_over, self.win = self.Env.step(action)
         if len(self.Env.current_env._game.sprite_groups["avatar"]) > 0:
-            self.avatar_position_data["episodes"][-1].append(
+            self.avatar_position_data["data"].append(
                 (
                     self.Env.current_env._game.sprite_groups["avatar"][0].rect.left,
                     self.Env.current_env._game.sprite_groups["avatar"][0].rect.top,
@@ -123,19 +143,18 @@ class DopamineVGDLEnv(object):
                     self.Env.lvl,
                 )
             )
-
-            objects = self.Env.get_objects()
-            self.objects_position_data["episodes"][-1].append(
-                {
-                    "time": self.Env.current_env._game.time,
-                    "level": self.Env.lvl,
-                    "objects": objects,
-                }
-            )
-
         else:
             print("AVATAR_ERROR_IGNORE")
             self.game_over = True
+        
+        objects = self.Env.get_objects()
+        self.objects_position_data["data"].append(
+            {
+                "time": self.Env.current_env._game.time,
+                "level": self.Env.lvl,
+                "objects": objects,
+            }
+        )
 
         # PEDRO: 2. Store events that occur at each timestep
         timestep_events = set()
@@ -150,6 +169,7 @@ class DopamineVGDLEnv(object):
                 pass
             else:
                 timestep_events.add(tuple(sorted((e[1], e[2]))))
+
         for e in timestep_events:
             self.event_dict[e] += 1
 
@@ -217,14 +237,16 @@ class DopamineVGDLEnv(object):
                     return self.state, self.reward, self.game_over, 0
             self.episode_reward = 0
 
-            if self.episode % 2 == 0 and self.record_flag:
-                with open(self.avatar_file_path, "wb") as f:
+            if self.record_flag:
+                with open(self.avatar_file_path + f'_{self.episode}.p', "wb") as f:
                     cloudpickle.dump(self.avatar_position_data, f)
 
-                with open(self.objects_file_path, "wb") as f:
+                with open(self.objects_file_path + f'_{self.episode}.p', "wb") as f:
                     cloudpickle.dump(self.objects_position_data, f)
 
-            if self.record_flag:
+                self.avatar_position_data['data'] = []
+                self.objects_position_data['data'] = []
+
                 with open(
                     "{}/{}_reward_history_{}.csv".format(
                         self.experiment_outpath, self.game_name_short, self.level_switch
@@ -238,39 +260,6 @@ class DopamineVGDLEnv(object):
 
     def reset(self):
         self.Env.reset()
-        self.avatar_position_data = {
-            "game_info": (
-                self.Env.current_env._game.width,
-                self.Env.current_env._game.height,
-            ),
-            "episodes": [
-                [
-                    (
-                        self.Env.current_env._game.sprite_groups["avatar"][0].rect.left,
-                        self.Env.current_env._game.sprite_groups["avatar"][0].rect.top,
-                        self.Env.current_env._game.time,
-                        self.Env.lvl,
-                    )
-                ]
-            ],
-        }
-
-        objects = self.Env.get_objects()
-        self.objects_position_data = {
-            "game_info": (
-                self.Env.current_env._game.width,
-                self.Env.current_env._game.height,
-            ),
-            "episodes": [
-                [
-                    {
-                        "time": self.Env.current_env._game.time,
-                        "level": self.Env.lvl,
-                        "objects": objects,
-                    }
-                ]
-            ],
-        }
         self.episode_steps = 0
         # self.last_screen = self.get_screen()
         # self.current_screen = self.get_screen()
@@ -296,12 +285,12 @@ class DopamineVGDLEnv(object):
 
     def save_gif(self):
         imageio.mimsave(
-            "screens/{}_frame{}.gif".format(self.game_name_short, self.steps),
+            "{}/screens/{}_frame{}.gif".format(self.experiment_outpath, self.game_name_short, self.steps),
             self.screen_history,
         )
 
     def append_gif(self):
-        frame = self.Env.render(gif=False)
+        frame = self.Env.render(gif=True)
         self.screen_history.append(frame)
 
     # Auxiliary functions from player.py

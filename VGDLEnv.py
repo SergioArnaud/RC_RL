@@ -91,8 +91,8 @@ class VGDLEnv:
                     im[r: r + h, c: c + w, :] = np.array(sprite.color, dtype=np.uint8)
 
         if gif:
-            im = resize(im, (64, 64, 3))
-        return im
+            im = resize(im, (64, 64, 3))*255
+        return im.astype(np.uint8)
 
     def get_objects(self):
 
