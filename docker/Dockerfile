@@ -33,6 +33,6 @@ RUN rm get-pip.py
 RUN pip install --no-cache-dir -r /root/rc_rl/requirements.txt
 
 # Install JAX for GPU, overriding requirements.txt.
-RUN pip install --upgrade "jax[cuda111]" -f https://storage.googleapis.com/jax-releases/jax_releases.html
+RUN pip install --upgrade "jax[cuda]" -f https://storage.googleapis.com/jax-releases/jax_releases.html 
 
 WORKDIR /root/rc_rl
