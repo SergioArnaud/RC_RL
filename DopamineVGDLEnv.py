@@ -11,10 +11,12 @@ import cv2
 import time
 import os
 from scipy import misc
+import uuid
+
 
 
 class DopamineVGDLEnv(object):
-    def __init__(self, game_name, parameter_set=""):
+    def __init__(self, game_name, parameter_set="", tag=""):
 
         # CONFIGS
         self.game_name = game_name
@@ -26,8 +28,11 @@ class DopamineVGDLEnv(object):
         games_folder = "../all_games"
 
         date = time.strftime("%Y.%m.%d")
-        experiment_id = "{}_{}_{}".format(
-            time.strftime("%Y.%m.%d_%H.%M.%S"), game_name, parameter_set
+
+        self.experiment_uuid = uuid.uuid1()
+
+        experiment_id = "{}_{}_{}_{}_{}".format(
+            time.strftime("%Y.%m.%d_%H.%M.%S"), game_name, parameter_set, tag, self.experiment_uuid 
         )
 
         self.experiment_outpath = "../experiments/{}/{}/{}".format(
@@ -43,11 +48,11 @@ class DopamineVGDLEnv(object):
         self.record_flag = 1  # record_flag
         # pdb.set_trace()
 
-        self.avatar_file_path = "{}/avatar_positions/{}_avatar".format(
-            self.experiment_outpath, self.game_name_short
+        self.avatar_file_path = "{}/avatar_positions/{}_{}_avatar".format(
+            self.experiment_outpath, self.experiment_uuid, self.game_name_short
         )
-        self.objects_file_path = "{}/object_positions/{}_objects".format(
-            self.experiment_outpath, self.game_name_short
+        self.objects_file_path = "{}/object_positions/{}_{}_objects".format(
+            self.experiment_outpath, self.experiment_uuid, self.game_name_short
         )
 
         self.Env = VGDLEnv(self.game_name_short, games_folder)
@@ -83,8 +88,11 @@ class DopamineVGDLEnv(object):
 
         if self.record_flag:
             with open(
-                "{}/{}_reward_history_{}.csv".format(
-                    self.experiment_outpath, self.game_name_short, self.level_switch
+                "{}/{}_{}_reward_history_{}.csv".format(
+                    self.experiment_outpath, 
+                    self.experiment_uuid,
+                    self.game_name_short, 
+                    self.level_switch
                 ),
                 "w",
             ) as file:
@@ -94,8 +102,11 @@ class DopamineVGDLEnv(object):
                 )
 
             with open(
-                "{}/{}_object_interaction_history_{}.csv".format(
-                    self.experiment_outpath, self.game_name_short, self.level_switch
+                "{}/{}_{}_object_interaction_history_{}.csv".format(
+                    self.experiment_outpath,
+                    self.experiment_uuid,
+                    self.game_name_short, 
+                    self.level_switch
                 ),
                 "a",
             ) as file:
@@ -141,6 +152,7 @@ class DopamineVGDLEnv(object):
                     self.Env.current_env._game.sprite_groups["avatar"][0].rect.top,
                     self.Env.current_env._game.time,
                     self.Env.lvl,
+                    self.steps,
                 )
             )
         else:
@@ -152,6 +164,7 @@ class DopamineVGDLEnv(object):
             {
                 "time": self.Env.current_env._game.time,
                 "level": self.Env.lvl,
+                "timestep": self.steps,
                 "objects": objects,
             }
         )
@@ -185,8 +198,11 @@ class DopamineVGDLEnv(object):
             # PEDRO: 3. At the end of each episode, write events to csv
             if self.record_flag:
                 with open(
-                    "{}/{}_object_interaction_history_{}.csv".format(
-                        self.experiment_outpath, self.game_name_short, self.level_switch
+                    "{}/{}_{}_object_interaction_history_{}.csv".format(
+                        self.experiment_outpath, 
+                        self.experiment_uuid,
+                        self.game_name_short, 
+                        self.level_switch
                     ),
                     "a",
                 ) as file:
@@ -224,8 +240,9 @@ class DopamineVGDLEnv(object):
             if self.level_step():
                 if self.record_flag:
                     with open(
-                        "{}/{}_reward_history_{}.csv".format(
+                        "{}/{}_{}_reward_history_{}.csv".format(
                             self.experiment_outpath,
+                            self.experiment_uuid,
                             self.game_name_short,
                             self.level_switch,
                         ),
@@ -248,8 +265,11 @@ class DopamineVGDLEnv(object):
                 self.objects_position_data['data'] = []
 
                 with open(
-                    "{}/{}_reward_history_{}.csv".format(
-                        self.experiment_outpath, self.game_name_short, self.level_switch
+                    "{}/{}_{}_reward_history_{}.csv".format(
+                        self.experiment_outpath, 
+                        self.experiment_uuid,
+                        self.game_name_short, 
+                        self.level_switch
                     ),
                     "a",
                 ) as file:
@@ -285,7 +305,7 @@ class DopamineVGDLEnv(object):
 
     def save_gif(self):
         imageio.mimsave(
-            "{}/screens/{}_frame{}.gif".format(self.experiment_outpath, self.game_name_short, self.steps),
+            "{}/screens/{}_{}_frame_{}.gif".format(self.experiment_outpath, self.experiment_uuid, self.game_name_short, self.steps),
             self.screen_history,
         )
 
