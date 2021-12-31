@@ -36,7 +36,7 @@ python setup.py build_ext --inplace
 
 ```
 
-You can also use the [docker image](docker/) to run the code. 
+You can also use the [docker image](docker/) to train an agent. 
 
 ## Usage
 
@@ -72,6 +72,7 @@ python runDDQN.py -game_name aliens
 
 ## Credit
 
+```
 @misc{tsividis2021humanlevel,
       title={Human-Level Reinforcement Learning through Theory-Based Modeling, Exploration, and Planning}, 
       author={Pedro A. Tsividis and Joao Loula and Jake Burga and Nathan Foss and Andres Campero and Thomas Pouncy and Samuel J. Gershman and Joshua B. Tenenbaum},
