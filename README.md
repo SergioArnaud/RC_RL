@@ -1,75 +1,78 @@
-Interfacing with VGDL
-=====================
+# RC_RL
+The purpose of this repo is to train DeepRL models in the VGDL environment. The agents
+available are:
 
-SETUP
-```
-Conda environment
-pip install -r requirements.txt 
-```
-
-Instructions to interface with VGDL and to run DeepRL Models.
-
-Gym-like API to run your own models
---------------------
-The Methods are defined in `VGDLEnvAndres.py` :
-```
-#Configs to set
-self.trial_num = 1002
-self.record_flag = 0 #1 to generate VGDL files (i.e. reward_histories used for figures)
-
-#Attributes
-self.game_name
-self.game_over
-self.action_space
-self.observation_space
-
-#Methods
-self.step(action)
-self.reset()
-self.set_level(level,steps)
-self.get_level()
-```
+* DQN ([Mnih et al., 2015][dqn])
+* C51 ([Bellemare et al., 2017][c51])
+* Rainbow ([Hessel et al., 2018][rainbow])
+* IQN ([Dabney et al., 2018][iqn])
+* SAC ([Haarnoja et al., 2018][sac])
+* EfficientZero ([Ye et al., 2019][efficientzero])
 
 
+## Requirements
 
+python 3.6 or later (3.8 preferred)
+> Note python-dev is needed to run efficientZero
 
-To run Deep RL models
--------------------------
-**Installation**
+## Setup
 
 ```
-sudo apt-get update && sudo apt-get install python python2.7 python-pip virtualenv git wget emacs cmake zlib1g-devcmake zlib1g-dev
+# First clone the repo
+git clone https://github.com/SergioArnaud/vgdl-emulator-py3.git
 
-pip install wheel
-pip install -r requirements
+# Add the submodules
+git submodule update --init --recursive
 
-#FOR Dopamine:
-pip install absl-py atari-py gin-config gym opencv-python tensorflow-gpu
+# Install the requirements
+pip install -r requirements.txt
+
+# Make the c dependencies for efficientZero (optional - only needed if you want to train an efficientZero agent)
+# This might be messy, specially if your trying to run this on a mac. Linux is recommended.
+# Finally, note that python-dev is needed to build the c dependencies. 
+
+cd EfficientZero/config/core/ctree
+python setup.py build_ext --inplace
+
 ```
 
+## Usage
 
-
-**Run Dopamine**
-
-Clone this Repo and our version of Dopamine from https://github.com/ACampero/dopamine as a submodule as in the Repo
+#### Dopamine
 
 ```
-python -um dopamine.discrete_domains.train \
-  --base_dir=./tmp/dopamine/aliens \
-  --gin_files='dopamine/agents/rainbow/configs/rainbow_aaaiAndres.gin' \
-  --gin_bindings='create_atari_environment.game_name="VGDL_aliens"'
+python -um dopamine.discrete_domains.train  \
+ --base_dir=./tmp/dopamine/rainbow_ef \ # Where to store the results
+ --gin_files='dopamine/jax/agents/full_rainbow/configs/full_efficient_rainbow.gin' \ # The gin file to use
+ --gin_bindings='create_atari_environment.game_name="VGDL_aliens"' # The vgdl (or atari) game to play
 ```
 
-**Run Pytorch Implemenation of DDQN**
+#### EfficientZero
+
+```
+python -um main.py 
+    --env VGDL_aliens \ # Or an atari env, (BreakoutNoFrameskip-v4 for example)
+    --case vgdl \ # Or `atari`
+    --opr train \
+    --amp_type torch_amp \
+    --num_gpus 1 \
+    --num_cpus 4 \
+    --cpu_actor 1 \
+    --gpu_actor 1 \
+    --force
+```
+
+#### Pytorch Implemenation of DDQN
 
 ```
 python runDDQN.py -game_name aliens
 ```
 
+## Credit
 
-
-
-
-
-
-
+[dqn]: https://storage.googleapis.com/deepmind-media/dqn/DQNNaturePaper.pdf
+[c51]: http://proceedings.mlr.press/v70/bellemare17a.html
+[rainbow]: https://www.aaai.org/ocs/index.php/AAAI/AAAI18/paper/download/17204/16680
+[iqn]: https://arxiv.org/abs/1806.06923
+[sac]: https://arxiv.org/abs/1812.05905
+[efficientzero]: https://arxiv.org/abs/2111.00210
