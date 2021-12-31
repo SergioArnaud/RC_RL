@@ -81,3 +81,11 @@ python runDDQN.py -game_name aliens
       archivePrefix={arXiv},
       primaryClass={cs.AI}
 }
+
+
+[dqn]: https://storage.googleapis.com/deepmind-media/dqn/DQNNaturePaper.pdf
+[c51]: http://proceedings.mlr.press/v70/bellemare17a.html
+[rainbow]: https://www.aaai.org/ocs/index.php/AAAI/AAAI18/paper/download/17204/16680
+[iqn]: https://arxiv.org/abs/1806.06923
+[sac]: https://arxiv.org/abs/1812.05905
+[efficientzero]: https://arxiv.org/abs/2111.00210
