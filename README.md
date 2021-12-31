@@ -28,13 +28,15 @@ git submodule update --init --recursive
 pip install -r requirements.txt
 
 # Make the c dependencies for efficientZero (optional - only needed if you want to train an efficientZero agent)
-# This might be messy, specially if your trying to run this on a mac. Linux is recommended.
+# This might be complicated, specially if your trying to run this on a mac. Linux is recommended.
 # Finally, note that python-dev is needed to build the c dependencies. 
 
 cd EfficientZero/config/core/ctree
 python setup.py build_ext --inplace
 
 ```
+
+You can also use the [docker image](docker/) to run the code. 
 
 ## Usage
 
@@ -70,9 +72,11 @@ python runDDQN.py -game_name aliens
 
 ## Credit
 
-[dqn]: https://storage.googleapis.com/deepmind-media/dqn/DQNNaturePaper.pdf
-[c51]: http://proceedings.mlr.press/v70/bellemare17a.html
-[rainbow]: https://www.aaai.org/ocs/index.php/AAAI/AAAI18/paper/download/17204/16680
-[iqn]: https://arxiv.org/abs/1806.06923
-[sac]: https://arxiv.org/abs/1812.05905
-[efficientzero]: https://arxiv.org/abs/2111.00210
+@misc{tsividis2021humanlevel,
+      title={Human-Level Reinforcement Learning through Theory-Based Modeling, Exploration, and Planning}, 
+      author={Pedro A. Tsividis and Joao Loula and Jake Burga and Nathan Foss and Andres Campero and Thomas Pouncy and Samuel J. Gershman and Joshua B. Tenenbaum},
+      year={2021},
+      eprint={2107.12544},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI}
+}
