@@ -16,7 +16,7 @@ import uuid
 
 
 class DopamineVGDLEnv(object):
-    def __init__(self, game_name, parameter_set="", tag=""):
+    def __init__(self, game_name, agent_name, parameter_set="", tag=""):
 
         # CONFIGS
         self.game_name = game_name
@@ -35,8 +35,8 @@ class DopamineVGDLEnv(object):
             time.strftime("%Y.%m.%d_%H.%M.%S"), game_name, parameter_set, tag, self.experiment_uuid 
         )
 
-        self.experiment_outpath = "../experiments/{}/{}/{}".format(
-            game_name, date, experiment_id
+        self.experiment_outpath = "../experiments/{}/{}/{}/{}".format(
+            agent_name, game_name, date, experiment_id
         )
 
         os.makedirs(self.experiment_outpath, exist_ok=True)
