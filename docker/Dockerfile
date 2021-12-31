@@ -3,10 +3,10 @@
 # Note:
 #   - Jax currently supports CUDA versions up to 11.3.
 #   - Tensorflow required CUDA versions after 11.2.
-ARG cuda_docker_tag="11.2.2-cudnn8-devel-ubuntu20.04"
+ARG cuda_docker_tag="11.4.2-cudnn8-devel-ubuntu20.04"
 FROM nvidia/cuda:${cuda_docker_tag}
 
-COPY ../requirements.txt /root/rc_rl/
+COPY requirements.txt /root/rc_rl/
 
 RUN apt-get update
 # tzdata is required below. To avoid hanging, install it first.
@@ -16,7 +16,7 @@ RUN apt-get install git wget libgl1-mesa-glx -y
 # Install python3.8.
 RUN apt-get install software-properties-common -y
 RUN add-apt-repository ppa:deadsnakes/ppa -y
-RUN apt-get install python3.8 -y
+RUN apt-get install python3.8-dev -y
 
 # Make python3.8 the default python.
 RUN rm /usr/bin/python3
@@ -36,3 +36,6 @@ RUN pip install --no-cache-dir -r /root/rc_rl/requirements.txt
 RUN pip install --upgrade "jax[cuda]" -f https://storage.googleapis.com/jax-releases/jax_releases.html 
 
 WORKDIR /root/rc_rl
+
+
+
