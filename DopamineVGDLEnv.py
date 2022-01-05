@@ -16,7 +16,7 @@ import uuid
 
 
 class DopamineVGDLEnv(object):
-    def __init__(self, game_name, agent_name, parameter_set="", tag=""):
+    def __init__(self, game_name, agent_name, parameter_set="", tag="", uuid = None):
 
         # CONFIGS
         self.game_name = game_name
@@ -29,15 +29,27 @@ class DopamineVGDLEnv(object):
 
         date = time.strftime("%Y.%m.%d")
 
-        self.experiment_uuid = uuid.uuid1()
+        if uuid is None:
+            self.experiment_uuid = uuid.uuid1()
+        else:
+            self.experiment_uuid = uuid
 
-        experiment_id = "{}_{}_{}_{}_{}".format(
-            time.strftime("%Y.%m.%d_%H.%M.%S"), game_name, parameter_set, tag, self.experiment_uuid 
-        )
+        if agent_name == "EfficientZero":
+            experiment_id = "{}_{}_{}_{}".format(
+                time.strftime("%Y.%m.%d_%H.%M.%S"), game_name, parameter_set, tag
+            )
 
-        self.experiment_outpath = "../experiments/{}/{}/{}/{}".format(
-            agent_name, game_name, date, experiment_id
-        )
+            self.experiment_outpath = "../experiments/{}/{}/{}/{}/{}".format(
+                agent_name, game_name, date, self.experiment_uuid, experiment_id
+            )
+        else:
+            experiment_id = "{}_{}_{}_{}_{}".format(
+                time.strftime("%Y.%m.%d_%H.%M.%S"), game_name, parameter_set, tag, self.experiment_uuid 
+            )
+
+            self.experiment_outpath = "../experiments/{}/{}/{}/{}".format(
+                agent_name, game_name, date, experiment_id
+            )
 
         os.makedirs(self.experiment_outpath, exist_ok=True)
         os.makedirs(self.experiment_outpath + "/screens", exist_ok=True)
