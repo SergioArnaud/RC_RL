@@ -51,7 +51,7 @@ python -um dopamine.discrete_domains.train  \
 #### EfficientZero
 
 ```
-python -um main.py 
+python main.py 
     --env VGDL_aliens \ # Or an atari env, (BreakoutNoFrameskip-v4 for example)
     --case vgdl \ # Or `atari`
     --opr train \
