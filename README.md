@@ -26,14 +26,13 @@ git submodule update --init --recursive
 # Install the requirements
 pip install -r requirements.txt
 
-# Make the c dependencies for efficientZero (optional - only needed if you want to train an efficientZero agent)
-# This might be complicated, specially if your trying to run this on a mac. Linux is recommended.
-# Finally, note that python-dev is needed to build the c dependencies. 
-
+# Make the c dependencies for efficientZero (optional - only needed if you want to train an efficientZero agent) 
 cd EfficientZero/config/core/ctree
 python setup.py build_ext --inplace
 
 ```
+
+>  The last step might be complicated, specially if your trying to run this on a mac. Linux is recommended. Also note that python-dev is needed to build the c dependencies for efficient zero.
 
 You can also use the [docker image](docker/) to train an agent. 
 
