@@ -27,12 +27,15 @@ RUN wget https://bootstrap.pypa.io/get-pip.py
 RUN python get-pip.py
 RUN rm get-pip.py
 
-# Install Dopamine dependencies.
-COPY requirements.txt /root/rc_rl/
-RUN pip install --no-cache-dir -r /root/rc_rl/requirements.txt
+# Install VGDL dependencies.
+COPY requirements_vgdl.txt /root/rc_rl/
+RUN pip install --no-cache-dir -r /root/rc_rl/requirements_vgdl.txt
 
-# Install JAX for GPU, overriding requirements.txt.
-#RUN pip install --no-cache-dir --upgrade https://storage.googleapis.com/jax-releases/cuda111/jaxlib-0.1.74+cuda111-cp38-none-manylinux2010_x86_64.whl
+# Install efficientZero dependencies.
+COPY requirements_efficient_zero.txt /root/rc_rl/
+RUN pip install --no-cache-dir -r /root/rc_rl/requirements_efficient_zero.txt
+
+# Install torch
 RUN pip install --no-cache-dir --upgrade torch==1.10.1+cu113 torchvision==0.11.2+cu113 torchaudio==0.10.1+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html
 
 WORKDIR /root/rc_rl
