@@ -1,0 +1,8 @@
+pygame==2.1.0
+numpy==1.19.5
+scipy==1.5.4
+IPython==7.16.2
+prompt-toolkit==2.0.1
+termcolor==1.1.0
+scikit-image==0.17.2
+gym==0.21.0
