@@ -36,7 +36,7 @@ class DopamineVGDLEnv(object):
 
         if agent_name == "EfficientZero":
             experiment_id = "{}_{}_{}_{}".format(
-                time.strftime("%Y.%m.%d_%H.%M.%S"), game_name, parameter_set, tag
+                time.strftime("%Y.%m.%d_%H.%M.%S_%f"), game_name, parameter_set, tag
             )
 
             self.experiment_outpath = "../experiments/{}/{}/{}/{}/{}".format(
@@ -44,7 +44,7 @@ class DopamineVGDLEnv(object):
             )
         else:
             experiment_id = "{}_{}_{}_{}_{}".format(
-                time.strftime("%Y.%m.%d_%H.%M.%S"), game_name, parameter_set, tag, self.experiment_uuid 
+                time.strftime("%Y.%m.%d_%H.%M.%S_%f"), game_name, parameter_set, tag, self.experiment_uuid 
             )
 
             self.experiment_outpath = "../experiments/{}/{}/{}/{}".format(
