@@ -29,7 +29,7 @@ Currently the images are hosted on dockerhub.
 
 ## Running in different architectures
 
-[Satori cluster](https://mit-satori.github.io) has a different architecture (linux/ppc64le), by default our docker image has the linux/amd64. To solve this we use the [docker buildx](https://github.com/docker/buildx) extension. 
+[Satori cluster](https://mit-satori.github.io) has a different architecture (`linux/ppc64le`), by default our docker image has the `linux/amd64. To solve this we use the [docker buildx](https://github.com/docker/buildx) extension. 
 
 ```
 docker buildx build --platform linux/amd64,linux/ppc64le -f docker/efficientZero/Dockerfile -t sergioarnaud/rc_rl_efficient_zero --push . 
