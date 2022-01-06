@@ -21,6 +21,8 @@ docker build -f docker/dopamine/Dockerfile -t rc_rl_dopamine .
 docker build -f docker/efficientZero/Dockerfile -t rc_rl_efficient_zero .   
 ```
 
+## Current images
+
 Currently the images are hosted on dockerhub.
 
 - https://hub.docker.com/r/sergioarnaud/rc_rl
