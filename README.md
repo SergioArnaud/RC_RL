@@ -80,6 +80,3 @@ python runDDQN.py -game_name aliens
       archivePrefix={arXiv},
       primaryClass={cs.AI}
 }
-
-
-
