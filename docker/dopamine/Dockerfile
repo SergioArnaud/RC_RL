@@ -39,11 +39,6 @@ RUN pip install --no-cache-dir -r /root/rc_rl/requirements_dopamine.txt
 RUN pip install --upgrade "jax[cuda]" -f https://storage.googleapis.com/jax-releases/jax_releases.html 
 
 ###### ATARI ######
-# Note: this section expects that Atari ROMs retrieved following the
-# instructions from atari-py: https://github.com/openai/atari-py#roms.
-# It should specify a directory (e.g. ~/roms) that contains ROMS.rar.
-# It should be run from the rom directory.
-# Comment if atari roms aren't needed
 
 # Copy ROMs into the image.
 RUN mkdir /root/roms
