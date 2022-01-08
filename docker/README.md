@@ -21,6 +21,8 @@ docker build -f docker/dopamine/Dockerfile -t rc_rl_dopamine .
 docker build -f docker/efficientZero/Dockerfile -t rc_rl_efficient_zero .   
 ```
 
+## Current images
+
 Currently the images are hosted on dockerhub.
 
 - https://hub.docker.com/r/sergioarnaud/rc_rl
@@ -29,7 +31,7 @@ Currently the images are hosted on dockerhub.
 
 ## Running in different architectures
 
-[Satori cluster](https://mit-satori.github.io) has a different architecture (linux/ppc64le), by default our docker image has the linux/amd64. To solve this we use the [docker buildx](https://github.com/docker/buildx) extension. 
+[Satori cluster](https://mit-satori.github.io) has a different architecture (`linux/ppc64le`), by default our docker image has the `linux/amd64`. To solve this we use the [docker buildx](https://github.com/docker/buildx) extension. 
 
 ```
 docker buildx build --platform linux/amd64,linux/ppc64le -f docker/efficientZero/Dockerfile -t sergioarnaud/rc_rl_efficient_zero --push . 
