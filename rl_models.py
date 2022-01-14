@@ -22,23 +22,24 @@ class DQN(nn.Module):
             nn.ReLU(),
             nn.Conv2d(64, 64, kernel_size=3, stride=1),
             nn.BatchNorm2d(64),
-            nn.ReLU())
-        self.classifier = nn.Sequential(
-            nn.Linear(64 * 4 * 4, 512),
             nn.ReLU(),
-            nn.Linear(512, self.output_size))
+        )
+        self.classifier = nn.Sequential(
+            nn.Linear(64 * 4 * 4, 512), nn.ReLU(), nn.Linear(512, self.output_size)
+        )
 
     def forward(self, x):
         # assert(list(x.size()[-3]) == self.input_size)
         # debug_here()
-        #pdb.set_trace()
+        # pdb.set_trace()
         x = self.cnn(x)
         x = x.view(x.size(0), -1)
         x = self.classifier(x)
         return x
 
-#ANDRES: Commented thing up and added everything until class ReplayMemory
-'''
+
+# ANDRES: Commented thing up and added everything until class ReplayMemory
+"""
 # Factorised NoisyLinear layer with bias
 class NoisyLinear(nn.Module):
   def __init__(self, in_features, out_features, std_init=0.5):
@@ -117,10 +118,10 @@ class DQN(nn.Module):
     for name, module in self.named_children():
       if 'fc' in name:
         module.reset_noise()
-'''
+"""
+
 
 class ReplayMemory(object):
-
     def __init__(self, capacity):
         self.capacity = capacity
         self.memory = []
@@ -130,7 +131,9 @@ class ReplayMemory(object):
         """Saves a transition."""
         if len(self.memory) < self.capacity:
             self.memory.append(None)
-        self.memory[self.position] = player.Transition(player.state, player.action, player.next_state, player.reward)
+        self.memory[self.position] = player.Transition(
+            player.state, player.action, player.next_state, player.reward
+        )
         self.position = (self.position + 1) % self.capacity
 
     def sample(self, batch_size):
@@ -139,9 +142,11 @@ class ReplayMemory(object):
     def __len__(self):
         return len(self.memory)
 
+
 def rl_model(player):
 
-    if player.config.model_name == 'DQN': return DQN(player.input_channels, player.n_actions).to(player.device)
+    if player.config.model_name == "DQN":
+        return DQN(player.input_channels, player.n_actions).to(player.device)
 
-    else: raise NotImplementedError('Model specified not implemented')
-
+    else:
+        raise NotImplementedError("Model specified not implemented")
