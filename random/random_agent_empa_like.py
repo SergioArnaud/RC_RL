@@ -40,7 +40,8 @@ if __name__ == "__main__":
                 terminal_on_life_loss=False,
                 game_name=game.replace("NoFrameskip-v4", ""),
                 tag=n_seed,
-                log_video = log_video
+                log_video = log_video,
+                output_name = output_name
             )
             lives = env.ale.lives()
 
