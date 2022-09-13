@@ -7,7 +7,7 @@ available are:
 * Rainbow ([Hessel et al., 2018](https://www.aaai.org/ocs/index.php/AAAI/AAAI18/paper/download/17204/16680))
 * IQN ([Dabney et al., 2018](https://arxiv.org/abs/1806.06923))
 * SAC ([Haarnoja et al., 2018](https://arxiv.org/abs/1812.05905))
-* EfficientZero ([Ye et al., 2019](https://arxiv.org/abs/2111.00210))
+* EfficientZero ([Ye et al., 2021](https://arxiv.org/abs/2111.00210))
 
 ## Requirements
 
